@@ -7,8 +7,8 @@ from .Bullet import Bullet
 
 
 class PlayerBullet(Bullet):
-    def __init__(self, x, y, angle):
-        super().__init__(x, y, angle)
+    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle):
+        super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6

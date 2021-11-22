@@ -6,9 +6,15 @@ from .Moveable import Moveable
 
 
 class EnemyB(Moveable):
-    def __init__(self, x, y, boxSize):
-        super().__init__(x, y, boxSize)
+    def __init__(self, gridX, gridY, boxSize):
+        super().__init__(gridX, gridY, boxSize)
+        self.x = self.gridX*self.boxSize + self.boxSize//2
+        self.y = self.gridY*self.boxSize + self.boxSize//2
         self.enemyR = 25
+
+    def __str__(self):
+        return f'enemyA row coords, coords {self.gridX}, {self.gridY}, {self.x}, {self.y}'
+
         
 
     def redrawAll(self, canvas):

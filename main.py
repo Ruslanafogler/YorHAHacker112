@@ -56,11 +56,11 @@ def drawTinyGrid(app, canvas):
         canvas.create_line(0, y, app.width, y, fill='#83f52c')
 
 
-def gonnaHitWall(app, moveX, moveY):
-    newPlayerCol = app.map.player.rowX+moveX
-    newPlayerRow = app.map.player.rowY+moveY
+def gonnaHitWallPlayer(app, moveX, moveY):
+    newPlayerCol = app.map.player.gridX+moveX
+    newPlayerRow = app.map.player.gridY+moveY
     nextSpotValue = app.map.map[newPlayerRow][newPlayerCol]
-    print('player location', app.map.player.rowX, app.map.player.rowY)
+    print('player location', app.map.player.gridX, app.map.player.gridY)
 
     if(nextSpotValue == 1 or
      nextSpotValue == 4):
@@ -68,13 +68,29 @@ def gonnaHitWall(app, moveX, moveY):
     else:
         return False
 
+def getGridLocation(app, i):
+    return int(i // app.boxSize)
+
+# def gonnaHitWallBullet(app, bullet):
+#     row = int(bullet.y // app.boxSize)
+#     col = int(bullet.x // app.boxSize)
+#     print('bullet r and c', col, row)
+#     spotValue = app.map.map[row][col]
+#     if(spotValue == 1 or spotValue == 4):
+#         print("BULLET HIT WALL")
+#         return True
+#     else:
+#         return False
+    
+
+    
 
 #TEMPORARY
 def movePlayer(app, moveX, moveY):
-    if(not gonnaHitWall(app, moveX, moveY)):
-        if(app.map.changeViewOffset(moveX, moveY, app.map.player.rowX, app.map.player.rowY)):
-            app.map.player.rowX+=moveX
-            app.map.player.rowY+=moveY
+    if(not gonnaHitWallPlayer(app, moveX, moveY)):
+        if(app.map.changeViewOffset(moveX, moveY)):
+            app.map.player.gridX+=moveX
+            app.map.player.gridY+=moveY
         else:
             app.map.player.move(moveX, moveY)
         
@@ -101,6 +117,12 @@ def redrawAll(app, canvas):
     #drawTinyGrid(app, canvas)
 
 
+def playerFire(app):
+    app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
+                                          app.map.player.x, app.map.player.y, 
+                                            app.boxSize, app.map.player.angle))
+
+
 def keyPressed(app, event):
     playerMovement = 1
     if(event.key == 'a'):
@@ -112,24 +134,22 @@ def keyPressed(app, event):
     if(event.key == 's'):
         movePlayer(app, 0, playerMovement)
     if(event.key == 'Space'):
-        app.playerBullets.append(PlayerBullet(app.map.player.x, app.map.player.y, app.map.player.angle))
-    # if(event.key == 'r'):
-    #     app.player.rotateShape(math.pi/180*5)
-    # if(event.key == 't'):
-    #     pass
-   
+        playerFire(app)
+
 def mouseMoved(app, event):
     app.mouseX = event.x
     app.mouseY = event.y
 
-# def mousePressed(app, event):
-#     app.playerBullets.append(PlayerBullet(app.player.x, app.player.y, app.player.angle))
+def mousePressed(app, event):
+    playerFire(app)
 
 def timerFired(app):
     for bullet in app.playerBullets:
+        if(not bullet.linearTravel(app.map.map)):
+            app.playerBullets.remove(bullet)
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
             app.playerBullets.remove(bullet)
-        bullet.linearTravel()
+        
         
     
         

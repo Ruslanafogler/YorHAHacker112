@@ -4,17 +4,18 @@ import math
 import numpy as np
 
 class Moveable():
-    def __init__(self, x, y, boxSize, health=50):
-        self.rowX = x
-        self.rowY = y
+    def __init__(self, gridX, gridY, boxSize, health=50):
+        self.gridX = gridX
+        self.gridY = gridY
+    
 
         self.boxSize = boxSize 
         self.health = health
 
 
     def move(self, x, y):
-        self.rowX+=x
-        self.rowY+=y
+        self.gridX+=x
+        self.gridY+=y
         self.x+=x*self.boxSize
         self.y+=y*self.boxSize
     

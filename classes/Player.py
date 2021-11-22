@@ -5,12 +5,14 @@ import numpy as np
 from .Moveable import Moveable
 
 class Player(Moveable):
-    def __init__(self, x, y, boxSize):
-        super().__init__(x, y, boxSize)
+    def __init__(self, gridX, gridY, boxSize):
+        super().__init__(gridX, gridY, boxSize)
+        
+        self.x = gridX*boxSize + boxSize//2
+        self.y = gridY*boxSize+boxSize//2    
         self.angle = math.pi/2
         self.theta = math.pi/2
-        self.x = x*boxSize + boxSize//2
-        self.y = y*boxSize+boxSize//2
+
         
         self.width = 20
         self.expWidth = 50
@@ -39,4 +41,4 @@ class Player(Moveable):
                                 x1, y1,
                                 x2, y2,
                                 x3, y3, 
-                                fill='black')
+                                fill='white')
