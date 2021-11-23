@@ -86,14 +86,6 @@ def playerFireBullet(app):
     app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
                                           app.map.player.x, app.map.player.y, 
                                             app.boxSize, app.map.player.angle))
-    # app.playerBullets.append(EnemyBullet(app.map.player.gridX, app.map.player.gridY,
-    #                                       app.map.player.x, app.map.player.y, 
-    #                                         app.boxSize, app.map.player.angle, 'orange'))
-
-def enemyFire(app):
-    app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
-                                          app.map.player.x, app.map.player.y, 
-                                            app.boxSize, app.map.player.angle))
 
 
 def keyPressed(app, event):
@@ -119,9 +111,9 @@ def mouseMoved(app, event):
 def mousePressed(app, event):
     playerFireBullet(app)
 
-def bulletController(app, bulletList):
+def bulletController(app, bulletList, isPlayerBullet):
     for bullet in bulletList:
-        if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, True)):
+        if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, isPlayerBullet)):
             if(bullet in bulletList):
                 bulletList.remove(bullet)
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
@@ -129,18 +121,8 @@ def bulletController(app, bulletList):
                 bulletList.remove(bullet)    
 
 def timerFired(app):
-    # for bullet in app.playerBullets:
-    #     if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, True)):
-    #         if(bullet in app.playerBullets):
-    #             app.playerBullets.remove(bullet)
-    #     if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
-    #         if(bullet in app.playerBullets):
-    #             app.playerBullets.remove(bullet)
 
-    bulletController(app, app.playerBullets)
-
-
-    
+    bulletController(app, app.playerBullets, True)
     for enemy in app.map.enemyList:
         enemy.incTimers()
 
@@ -149,20 +131,10 @@ def timerFired(app):
             enemy.fireBullet(EnemyBullet(enemy.gridX, enemy.gridY,
                                         enemy.x, enemy.y,
                                         enemy.boxSize, enemy.angle,
-                                        'orange'))
+                                        enemy.type))
             enemy.shootingTimer = 0
         
-        # bulletController(app, enemy.bullets)
-
-
-        for bullet in enemy.bullets:
-            if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, False)):
-                if(bullet in enemy.bullets):
-                    enemy.removeBullet(bullet)
-            if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
-                if(bullet in app.playerBullets):
-                    enemy.removeBullet(bullet)            
-
+        bulletController(app, enemy.bullets, False)
 
         #enemy moves according to their own set of movement lists
         if(enemy.movements):

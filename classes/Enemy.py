@@ -18,7 +18,7 @@ class Enemy(Moveable):
         self.aimingTimer = 0
         self.shootingTimer = 0
         self.aimCoolDown = 0.1
-        self.fireCoolDown = 2
+        self.fireCoolDown = 9
         self.movementCoolDown = 0.8
 
 
@@ -63,7 +63,8 @@ class Enemy(Moveable):
          self.bullets.remove(bullet)
 
 
-     def redrawAll(self, canvas):
+     def redrawAll(self, canvas, playerX, playerY):
+         Moveable.getAngle(self, playerX, playerY)
 
          if(self.type == 'A'):
             Enemy.drawEnemyA(self, canvas)
@@ -98,6 +99,7 @@ class Enemy(Moveable):
 
     #the circle one
      def drawEnemyB(self, canvas):
+
         canvas.create_oval(self.x - self.enemyR, self.y-self.enemyR,
                     self.x + self.enemyR, self.y + self.enemyR, fill='#242526')
 

@@ -1,6 +1,7 @@
 
 from cmu_112_graphics import *
 import math
+import random
 import numpy as np
 
 
@@ -13,8 +14,6 @@ class Bullet:
         
         self.gridX = initGridX
         self.gridY = initGridY
-        self.incDx = 0
-        self.incDy = 0
 
         self.x = playerX
         self.y = playerY    
@@ -23,15 +22,14 @@ class Bullet:
         self.angle = angle
         self.theta = math.pi/2
         self.boxSize = boxSize
+  
+  
+    def damage(self, other):
+        other.health-=self.bulletDamage        
 
 
-    def linearTravel(self, map, minRowScreen, minColScreen, isPlayer):
+    def linearTravel(self, map, minRowScreen, minColScreen, isPlayerBullet):
         
-        def checkSelf(mapVal):
-            if(isPlayer):
-                return mapVal == 'A' or mapVal == 'B'
-            else:
-                return mapVal == 'P'
 
         bulletScreenRow, bulletScreenCol = Bullet.findLocationOnScreenGrid(self)
 
@@ -39,14 +37,24 @@ class Bullet:
         mapVal = map[actualGridRow][actualGridCol]
 
 
-        if( mapVal == 1 or mapVal == 4 or checkSelf(mapVal)):
-            print(self, 'cannot travel')
+        if( mapVal == 1 or mapVal == 4):
+            #hit a wall or enemy
             return False
+        elif(isPlayerBullet and (mapVal == 'A' or mapVal == 'B')):
+            #we hit an enemy
+            print('hit an enemy')
+            return 'enemy'
+        elif(not isPlayerBullet and (mapVal == 'P')):
+            #we hit an enemy
+            print('hit the player')
+            return 'player'
         else:
-            print(self, 'traveling')
+            # print(self, 'traveling')
             self.x+=Bullet.calcLinearDx(self)
             self.y+=Bullet.calcLinearDy(self)
             return True
+
+
     
     def findLocationOnScreenGrid(self):
         row = int(self.y // self.boxSize)
@@ -62,19 +70,34 @@ class Bullet:
 
 
 
+
 class EnemyBullet(Bullet):
-    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle, color):
+    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle, type):
         super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6
-        self.color = color
+        self.color = EnemyBullet.decideColor(type)
+        self.bulletDamage = 2
 
 
     colors = {
         'purple': "#3e236e",
         'orange': "#ffa90a"
     }
+
+    def decideColor(type):
+        chance = random.randint(0, 10)
+        if(type == 'B'):
+            purpleChance = 3
+        else:
+            purpleChance = 7
+
+        if(chance > purpleChance):
+            return 'purple'
+        else:
+            return 'orange'
+        
 
 
     def __str__(self):
@@ -95,8 +118,10 @@ class PlayerBullet(Bullet):
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6
+        self.bulletDamage = 2
     def __str__(self):
         return f'player bullet spawned at row {self.gridY}, col {self.gridX}'
+
 
 
     def redrawAll(self, canvas):

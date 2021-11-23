@@ -227,12 +227,6 @@ class Map:
                 drawCol+=1
             drawRow+=1
 
-    def drawEnemies(self, canvas):
-        for enemy in self.enemyList:
-            enemy.redrawAll(canvas)
-
-
-
     
 
     def redrawAll(self, canvas, mouseX, mouseY):  
@@ -254,7 +248,7 @@ class Map:
         enemy.x = rowCoord
         enemy.y = colCoord
 
-        enemy.redrawAll(canvas)
+        enemy.redrawAll(canvas, self.player.x, self.player.y)
         
         
 
