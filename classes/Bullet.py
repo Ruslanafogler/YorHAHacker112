@@ -16,13 +16,8 @@ class Bullet:
         self.incDx = 0
         self.incDy = 0
 
-
-
         self.x = playerX
-        self.y = playerY
-
-
-        
+        self.y = playerY    
         
         self.speed = 45
         self.angle = angle
@@ -30,62 +25,100 @@ class Bullet:
         self.boxSize = boxSize
 
 
+    def linearTravel(self, map, minRowScreen, minColScreen, isPlayer):
+        
+        def checkSelf(mapVal):
+            if(isPlayer):
+                return mapVal == 'A' or mapVal == 'B'
+            else:
+                return mapVal == 'P'
 
-    def linearTravel(self, map):
-        nextGridX, nextGridY, dx, dy = Bullet.nextGridIndexParams(self)
-        print(nextGridY, nextGridX)
+        bulletScreenRow, bulletScreenCol = Bullet.findLocationOnScreenGrid(self)
 
-        nextSpotVal = map[nextGridY][nextGridX]
-        if(nextSpotVal == 1 or nextSpotVal == 4):
-           print('ah, wall at', nextGridY, nextGridX)
-           return False
+        actualGridRow, actualGridCol =bulletScreenRow+minRowScreen, bulletScreenCol+minColScreen
+        mapVal = map[actualGridRow][actualGridCol]
+
+
+        if( mapVal == 1 or mapVal == 4 or checkSelf(mapVal)):
+            print(self, 'cannot travel')
+            return False
         else:
-            self.gridX = nextGridX
-            self.gridY = nextGridY
-            self.incDx+=dx
-            self.incDy+=dy
-            self.x+=dx
-            self.y+=dy
+            print(self, 'traveling')
+            self.x+=Bullet.calcLinearDx(self)
+            self.y+=Bullet.calcLinearDy(self)
             return True
-        
-        
-        
     
-    def nextGridIndexParams(self):
-        dx, dy = Bullet.calcLinearDx(self), Bullet.calcLinearDy(self)
-        nextGridX = int(self.gridX + self.incDx//self.boxSize)
-        nextGridY = int(self.gridY + self.incDy//self.boxSize)
-
-        return nextGridX, nextGridY, dx, dy
-
-    # def linearTravel(self, map):
-    #     nextGridX, nextGridY, dx, dy = Bullet.nextGridIndexParams(self)
-    #     print(nextGridY, nextGridX)
-
-    #     nextSpotVal = map[nextGridY][nextGridX]
-    #     if(nextSpotVal == 1 or nextSpotVal == 4):
-    #        return False
-    #     else:
-    #         self.gridX = nextGridX
-    #         self.gridY = nextGridY
-    #         self.x+=dx
-    #         self.y+=dy
-    #         return True
-        
-        
-        
-    
-    # def nextGridIndexParams(self):
-    #     dx, dy = Bullet.calcLinearDx(self), Bullet.calcLinearDy(self)
-    #     print(dx, dy)
-    #     return (round((self.gridX*self.boxSize + dx)//self.boxSize), 
-    #             round((self.gridY*self.boxSize + dy)//self.boxSize), 
-    #             dx, dy)
+    def findLocationOnScreenGrid(self):
+        row = int(self.y // self.boxSize)
+        col = int(self.x // self.boxSize)
+        return (row, col)
 
     def calcLinearDx(self):
         return self.speed*math.cos(self.angle+math.pi)
 
     def calcLinearDy(self):
         return self.speed*math.sin(self.angle+math.pi)
+
+
+
+
+class EnemyBullet(Bullet):
+    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle, color):
+        super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
+        self.bulletSpeed = 40
+        self.bulletLength = 45
+        self.bulletWidth = 6
+        self.color = color
+
+
+    colors = {
+        'purple': "#3e236e",
+        'orange': "#ffa90a"
+    }
+
+
+    def __str__(self):
+        return f'enemy bullet spawned at row {self.gridY}, col {self.gridX}'
+
+
+    def redrawAll(self, canvas):
+        radius = 20
+        canvas.create_oval(self.x-radius, self.y-radius, self.x+radius, self.y+radius, fill=EnemyBullet.colors[self.color], width=0)
+
+
+
+
+
+class PlayerBullet(Bullet):
+    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle):
+        super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
+        self.bulletSpeed = 40
+        self.bulletLength = 45
+        self.bulletWidth = 6
+    def __str__(self):
+        return f'player bullet spawned at row {self.gridY}, col {self.gridX}'
+
+
+    def redrawAll(self, canvas):
+        # x0 = self.x-self.bulletWidth/2
+        # y0 = self.x-self.bulletLength/2
+
+        # x1 = self.x+self.bulletWidth/2
+        # y1 = self.x+self.bulletLength/2
+        
+        # x0,y0 = Moveable.do2dRotation(self.x, self.y, x0, y0, self.angle-self.theta)
+        # x1,y1 = Moveable.do2dRotation(self.x, self.y, x1, y1, self.angle-self.theta)
+
+        # # canvas.create_polygon(x0, y0,
+        # #                         x1, y1,
+        # #                         fill='white')
+        # # canvas.create_rectangle(x0, y0,
+        # #                         x1, y1,
+        # #                         fill='white')
+        radius = 8
+        canvas.create_oval(self.x-radius, self.y-radius, self.x+radius, self.y+radius, fill='white', width=0)
+
+        
+
     
     

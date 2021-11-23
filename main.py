@@ -7,7 +7,8 @@ import numpy as np
 from classes.Player import Player
 
 from classes.Map import Map
-from classes.BulletPlayer import PlayerBullet
+from classes.Bullet import PlayerBullet, EnemyBullet
+
 
 #Game inspired by N.Automata Hacking and Hades Gameplay!
 
@@ -23,7 +24,7 @@ def appStarted(app):
 
     # app.player = Player(6, 8, app.boxSize)
     app.playerBullets = []
-    # app.obstacleList = [Obstacle(a+4, 5, app.boxSize) for a in range(4)]
+    # app.obstacleList = [Obsddtacle(a+4, 5, app.boxSize) for a in range(4)]
     app.map = Map(app.width, app.height, app.gridSize, app.boxSize)
 
     app.enemyPath = [(-1, 0), 
@@ -67,6 +68,10 @@ def redrawAll(app, canvas):
     # app.mapGrid.redrawAll(canvas)
     for bullet in app.playerBullets:
         bullet.redrawAll(canvas)
+
+    for enemy in app.map.enemyList:
+        for bullet in enemy.bullets:
+            bullet.redrawAll(canvas)
     # app.player.redrawAll(canvas, app.mouseX, app.mouseY)
 
 
@@ -77,7 +82,15 @@ def redrawAll(app, canvas):
     #drawTinyGrid(app, canvas)
 
 
-def playerFire(app):
+def playerFireBullet(app):
+    app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
+                                          app.map.player.x, app.map.player.y, 
+                                            app.boxSize, app.map.player.angle))
+    # app.playerBullets.append(EnemyBullet(app.map.player.gridX, app.map.player.gridY,
+    #                                       app.map.player.x, app.map.player.y, 
+    #                                         app.boxSize, app.map.player.angle, 'orange'))
+
+def enemyFire(app):
     app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
                                           app.map.player.x, app.map.player.y, 
                                             app.boxSize, app.map.player.angle))
@@ -94,7 +107,7 @@ def keyPressed(app, event):
     if(event.key == 's'):
         app.map.movePlayer(0, playerMovement)
     if(event.key == 'Space'):
-        playerFire(app)
+        playerFireBullet(app)
     # if(event.key == 'r'): 
     #     print('called')
     #     app.map.moveEnemy(app.map.enemyList[0], (0, 1))
@@ -104,22 +117,59 @@ def mouseMoved(app, event):
     app.mouseY = event.y
 
 def mousePressed(app, event):
-    playerFire(app)
+    playerFireBullet(app)
+
+def bulletController(app, bulletList):
+    for bullet in bulletList:
+        if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, True)):
+            if(bullet in bulletList):
+                bulletList.remove(bullet)
+        if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
+            if(bullet in bulletList):
+                bulletList.remove(bullet)    
 
 def timerFired(app):
-    for bullet in app.playerBullets:
-        if(not bullet.linearTravel(app.map.map)):
-            app.playerBullets.remove(bullet)
-        if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
-            app.playerBullets.remove(bullet)
+    # for bullet in app.playerBullets:
+    #     if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, True)):
+    #         if(bullet in app.playerBullets):
+    #             app.playerBullets.remove(bullet)
+    #     if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
+    #         if(bullet in app.playerBullets):
+    #             app.playerBullets.remove(bullet)
+
+    bulletController(app, app.playerBullets)
+
 
     
     for enemy in app.map.enemyList:
-        enemy.incTimer()
+        enemy.incTimers()
+
+        #enemy fires at the player:
+        if(enemy.shootingTimer > enemy.fireCoolDown):
+            enemy.fireBullet(EnemyBullet(enemy.gridX, enemy.gridY,
+                                        enemy.x, enemy.y,
+                                        enemy.boxSize, enemy.angle,
+                                        'orange'))
+            enemy.shootingTimer = 0
+        
+        # bulletController(app, enemy.bullets)
+
+
+        for bullet in enemy.bullets:
+            if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, False)):
+                if(bullet in enemy.bullets):
+                    enemy.removeBullet(bullet)
+            if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
+                if(bullet in app.playerBullets):
+                    enemy.removeBullet(bullet)            
+
+
+        #enemy moves according to their own set of movement lists
         if(enemy.movements):
-            if(enemy.timer > enemy.coolDown):
+            if(enemy.movementTimer > enemy.movementCoolDown):
                 app.map.enemyAutoTravel(enemy)
-                enemy.timer = 0
+                enemy.movementTimer = 0
+                
 
             
         

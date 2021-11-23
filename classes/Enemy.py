@@ -14,10 +14,18 @@ class Enemy(Moveable):
         self.x = self.gridX*self.boxSize + self.boxSize//2
         self.y = self.gridY*self.boxSize + self.boxSize//2
         
-        self.timer = 0
-        self.coolDown = 0.8
+        self.movementTimer = 0
+        self.aimingTimer = 0
+        self.shootingTimer = 0
+        self.aimCoolDown = 0.1
+        self.fireCoolDown = 2
+        self.movementCoolDown = 0.8
+
+
         self.movements = []
         self.movementIndex = -1
+
+        self.bullets=[]
 
         self.centerLength = 18
         self.angle = math.pi/2
@@ -31,8 +39,10 @@ class Enemy(Moveable):
     #the polygon one
 
 
-     def incTimer(self):
-         self.timer+=1
+     def incTimers(self):
+        self.movementTimer+=1
+        self.aimingTimer+=1
+        self.shootingTimer+=1
      
      def initMovements(self, map, playerPosition):
          startPosition = (self.gridY, self.gridX)
@@ -46,8 +56,11 @@ class Enemy(Moveable):
          else:
             return self.movements[self.movementIndex]
     
-     
+     def fireBullet(self, newBullet):
+         self.bullets.append(newBullet)
 
+     def removeBullet(self, bullet):
+         self.bullets.remove(bullet)
 
 
      def redrawAll(self, canvas):

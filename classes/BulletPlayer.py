@@ -5,7 +5,7 @@ import numpy as np
 from .Moveable import Moveable
 from .Bullet import Bullet
 
-
+#OBSOLETE, SHIFTED THIS INTO BULLET, SEE BULLET INSTEAD
 class PlayerBullet(Bullet):
     def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle):
         super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)

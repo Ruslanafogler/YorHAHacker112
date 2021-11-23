@@ -7,11 +7,11 @@
 #ref this github repo on data science medium article
 #https://github.com/BaijayantaRoy/Medium-Article/blob/master/A_Star.ipynb 
 
-#ryancollingwood bc he used queues
-#https://gist.github.com/ryancollingwood/32446307e976a11a1185a5394d6657bc
 
-#ok ngl I used this one the most by far, way more than ^^
+#ok ngl I used these ones the most by far, way more than ^^
 #https://github.com/BaijayantaRoy/Medium-Article/blob/master/A_Star.ipynb 
+#Sebasitian Joy's channel
+#https://www.youtube.com/watch?v=-L-WgKMFuhE&t=391s
 
 
 #enemy coord to player
@@ -161,7 +161,7 @@ def aStar(map, start, end, allowDiagMoves = False):
         #usually checks if currentNode == endNode
         #however I want the enemy to stop a distance away from the player
         if(currentNode.f != 0 and currentNode.f < 30):
-            print("DISTANCES", currentNode.f)
+            # print("DISTANCES", currentNode.f)
             # path = getPath(currentNode)
             # return path
             return getMovements(currentNode)
@@ -206,7 +206,7 @@ def aStar(map, start, end, allowDiagMoves = False):
 
             neighbor.f = neighbor.g + neighbor.h
 
-            print('neighbor', neighbor.position, neighbor.f)
+            # print('neighbor', neighbor.position, neighbor.f)
 
             #check if the neighbor is already in the unVisitedList and
             #the g cost is lower

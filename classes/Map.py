@@ -7,15 +7,41 @@ from .Player import Player
 from .Enemy import Enemy
 from .convertToGrid import convertToGrid
 from .AStar import isLegalMove
-
+from .randomMapGen import createRandomMap
 
 
 def createMap(boxSize):
+    unparsedMap = createRandomMap()
+    map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
+
+    enemyList = []
     
-    f = open('classes/map2.txt')
+
+    for row in range(len(unparsedMap)):
+        for col in range(len(unparsedMap[0])):
+            elem = unparsedMap[row][col]
+            if(elem == 'P'):
+                playerPosition = (col, row)
+            elif(elem == 'A' or elem == 'B'):
+                    enemyList.append(Enemy(elem, playerPosition, col, row, boxSize))
+            
+           
+            if(isinstance(elem, str)):
+                map[row].append((elem))
+            else: 
+                map[row].append(int(elem))
+    return map, playerPosition, enemyList
+
+
+
+def createMapFromFile(boxSize):
+    
+    f = open('classes/map.txt')
     unparsedMap = f.read().split('\n')
     map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
     enemyList = []
+    # unparsedMap = createRandomMap()
+
 
     for row in range(len(unparsedMap)):
         for col in range(len(unparsedMap[row])):
@@ -34,7 +60,7 @@ def createMap(boxSize):
             
     # map = [[int(col) 
     #             for col in row] 
-    #             for row in unparsedMap]
+    # #             for row in unparsedMap]
     f.close()
     # print(map)
     return map, playerPosition, enemyList
@@ -59,7 +85,10 @@ class Map:
         self.margin = 100
         self.width = width
         self.height = height
-        self.map, self.playerPosition, self.enemyList = createMap(boxSize)
+        #createMapFromFile was used to create map previously
+        self.map, self.playerPosition, self.enemyList = createMapFromFile(boxSize)
+
+        print(getRowAndColLength(self.map))
         self.rowLength, self.colLength = getRowAndColLength(self.map)
 
         # print('player position', self.playerPosition)
@@ -100,15 +129,15 @@ class Map:
         newGridX = enemy.gridX + colInc
         newGridY = enemy.gridY + rowInc
         
-        print(enemy)
+        #print(enemy)
         if(isLegalMove(self.map, newGridY, newGridX)):
             self.map[enemy.gridY][enemy.gridX] = 0
             self.map[newGridY][newGridX] = enemy.type
             enemy.move(colInc, rowInc)
-            print(enemy)
+            #print(enemy)
             #printMap(self)
-        else:
-            print('illegal move enemy')
+        # else:
+            #print('illegal move enemy')
 
         
 
@@ -126,17 +155,6 @@ class Map:
 
     def getGridLocation(app, i):
         return int(i // app.boxSize)
-
-    # def gonnaHitWallBullet(app, bullet):
-    #     row = int(bullet.y // app.boxSize)
-    #     col = int(bullet.x // app.boxSize)
-    #     print('bullet r and c', col, row)
-    #     spotValue = self.map[row][col]
-    #     if(spotValue == 1 or spotValue == 4):
-    #         print("BULLET HIT WALL")
-    #         return True
-    #     else:
-    #         return False
         
 
         
