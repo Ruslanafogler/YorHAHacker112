@@ -13,6 +13,7 @@
 #enemy coord to player
 
 import heapq
+import math
 
 
 
@@ -59,11 +60,11 @@ class Node:
     def __eq__(self, other):
         return self.position == other.position
 
-    def __lt__(self, other):
-        return self.f < other.f
+    # def __lt__(self, other):
+    #     return self.f < other.f
 
-    def __gt__(self, other):
-        return self.f > other.f
+    # def __gt__(self, other):
+    #     return self.f > other.f
 
     
 
@@ -76,12 +77,12 @@ def getPath(node):
         currentNode = currentNode.parent
     return path[::-1]
 
-#heursitic -- manhattan in this case
+#heursitic -- euclidean in this case
 def getDistance(a,b):
     (x1, y1) = a
     (x2, y2) = b
 
-    return abs(x1- x2) + abs(y1 - y2)
+    return (x1-x2)**2 + (y1-y2)**2
 
 
 
@@ -98,13 +99,13 @@ def aStar(map, start, end, allowDiagMoves = False):
     unVisitedList = []
     visitedList = []
 
-    #create queue and add startNode to the unVisitedList
-    heapq.heapify(unVisitedList)
-    heapq.heappush(unVisitedList, startNode)
+    #add startNode to the unVisitedList
+    unVisitedList.append(startNode)
+    
 
     #stop condition so it won't be doing this forever
     iterations = 0
-    maxIterations = 10000
+    maxIterations = 3000
 
     if(allowDiagMoves):
         movements = [(1,0), (0, 1), (-1, 0), (0, -1), (1, 1),
@@ -121,8 +122,20 @@ def aStar(map, start, end, allowDiagMoves = False):
             return getPath(currentNode)
 
         
-        #get current node and put it on the visited list
-        currentNode = heapq.heappop(unVisitedList)
+        #get the node with the least f and set that as our current node
+
+        currentNode = unVisitedList[0]
+        currentIndex = 0
+
+#enumerate documentatino on real python
+#https://realpython.com/python-enumerate/
+        for index, node in enumerate(unVisitedList):
+            if(node.f < currentNode.f):
+                currentNode = node
+                currentIndex = index
+
+        #remove our currentNode and put in on the visited list
+        unVisitedList.pop(currentIndex)
         visitedList.append(currentNode)
 
 
@@ -142,10 +155,11 @@ def aStar(map, start, end, allowDiagMoves = False):
             # print(nodePositionX, nodePositionY)
         
             #make sure its not a wall or off the map
-            if(not isLegalMove(map, nodePositionX, nodePositionY)):
+            if(isLegalMove(map, nodePositionX, nodePositionY) == False):
                 continue
             
             #create new node and add it the list of neighbors for cur node
+            #Node creation -> (current, parent, position)
             newNode = Node(currentNode, (nodePositionX, nodePositionY))
 
             neighbors.append(newNode)
@@ -163,19 +177,22 @@ def aStar(map, start, end, allowDiagMoves = False):
             #get the g, h, f values
 
             neighbor.g = currentNode.g + 1
-            #uses manhattan distance as heuristic here(func up above)
+            
+            #uses euclidean distance as heuristic here(func up above)
             neighbor.h = getDistance(neighbor.position, end)
 
             neighbor.f = neighbor.g + neighbor.h
 
-            #ANOTHER horrible one line way of checking
-            #if the neighbor has already been put in the unVisited List
-            #don't want to add the same node twice
-            if(len([copyNeighbor for copyNeighbor in visitedList if copyNeighbor == neighbor]) > 0):
+            print('neighbor', neighbor.position, neighbor.f)
+
+            #check if the neighbor is already in the unVisitedList and
+            #the g cost is lower
+            if(len([i for i in unVisitedList if i == neighbor 
+            and neighbor.g > i.g ]) > 0):
                 continue
             
             #ok, we can add the neighbor to our unVisitedList
-            heapq.heappush(unVisitedList, neighbor)
+            unVisitedList.append(neighbor)
 
             #back to the top of the while!
         
@@ -189,10 +206,10 @@ def isLegalMove(map, nodePositionX, nodePositionY):
 
     # Make sure there's an actual path there
     mapVal = map[nodePositionX][nodePositionY]
-    if mapVal == 0:
+    if mapVal == 0 or mapVal == 'P':
         return True
-    
-    return False
+    else:
+        return False
         
 
 
@@ -201,9 +218,12 @@ def example(print_maze = True):
     
     map, player, enemyList = createMap()
 
-    print('a star time')
+    enemy = enemyList[2]
 
-    path = aStar(map, player, enemyList[0])
+    print('a star time')
+    print(enemy, player)
+
+    path = aStar(map, enemy, player)
 
     if print_maze:
       for step in path:
@@ -212,7 +232,11 @@ def example(print_maze = True):
       for row in map:
         line = []
         for col in row:
-          if col == 1:
+          if col == 'P':
+              line.append("P")
+          elif col == 'B' or col == 'A':
+            line.append("E")
+          elif col == 1:
             line.append("\u2588")
           elif col == 0:
             line.append(" ")
@@ -220,7 +244,7 @@ def example(print_maze = True):
             line.append(".")
         print("".join(line))
 
-    print(path)
+    print(path, 'for', enemy, 'to', player)
 
 
 
