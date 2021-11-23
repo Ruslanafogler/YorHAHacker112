@@ -38,7 +38,7 @@ def createMap(boxSize):
     #             for row in unparsedMap]
     f.close()
     # print(map)
-    return map, playerPosition, enemyList
+    return convertToGrid(map), playerPosition, enemyList
 
 
 #dumb af stupid lazy stressed solution right here lol
@@ -55,7 +55,7 @@ def getRowAndColLength(daList):
 
 
 
-class Map:
+class Map2:
     def __init__(self, width, height, gridSize, boxSize):
         self.margin = 100
         self.width = width
@@ -63,13 +63,13 @@ class Map:
         self.map, self.playerPosition, self.enemyList = createMap(boxSize)
         self.rowLength, self.colLength = getRowAndColLength(self.map)
 
-        # print('player position', self.playerPosition)
-        # print(self.enemyList)
+        print('player position', self.playerPosition)
+        print(self.enemyList)
 
-        # print("NEW MAP")
-        # print(convertToGrid(self.map))
+        print("NEW MAP")
+        print(convertToGrid(self.map))
 
-        self.player = Player(self.playerPosition[0], self.playerPosition[1], boxSize)
+        self.player = Player(self.playerPosition[0], self.playerPosition[1], gridSize)
 
 
         
@@ -79,9 +79,9 @@ class Map:
         self.offsetY = 0
 
 
-        self.maxRowIndex = self.width//boxSize+self.offsetY
-        self.maxColIndex = self.height//boxSize+self.offsetX
-        self.boxesDim = self.width//boxSize
+        self.maxRowIndex = self.width//gridSize+self.offsetY
+        self.maxColIndex = self.height//gridSize+self.offsetX
+        self.boxesDim = self.width//gridSize
 
         
 
@@ -129,15 +129,15 @@ class Map:
             for c in range(self.offsetX, self.maxColIndex):
                 val = self.map[r][c]                  
                 if(val == 4):
-                    Map.drawBox(self, canvas, 'offMap', drawCol, drawRow)
+                    Map2.drawBox(self, canvas, 'offMap', drawCol, drawRow)
                 elif(val == 1):
-                    Map.drawBox(self, canvas, 'obstacle', drawCol, drawRow)
+                    Map2.drawBox(self, canvas, 'obstacle', drawCol, drawRow)
                 else:
-                    Map.drawBox(self, canvas, 'onMap', drawCol, drawRow)
+                    Map2.drawBox(self, canvas, 'onMap', drawCol, drawRow)
                     if(val == 'A' or val == 'B'):
-                        enemy = Map.findEnemy(self, r, c)
+                        enemy = Map2.findEnemy(self, r, c)
                         if(enemy):
-                            Map.drawEnemy(self, canvas, enemy, drawCol, drawRow)
+                            Map2.drawEnemy(self, canvas, enemy, drawCol, drawRow)
 
 
                     
@@ -154,7 +154,7 @@ class Map:
     
 
     def redrawAll(self, canvas, mouseX, mouseY):  
-        Map.drawMap(self, canvas) 
+        Map2.drawMap(self, canvas) 
         self.player.redrawAll(canvas, mouseX, mouseY)
                 
 
@@ -177,17 +177,14 @@ class Map:
         
 
     def drawBox(self, canvas, type, c, r):
-        rowCoord = r*self.boxSize
-        colCoord = c*self.boxSize
-        if(type == 'obstacle'):
-            width = 2
-        else:
-            width = 0
+        rowCoord = r*self.gridSize
+        colCoord = c*self.gridSize
+        width = 0
         
         canvas.create_rectangle(
         colCoord, rowCoord,
-        colCoord + self.boxSize, rowCoord + self.boxSize,
-        fill=Map.colors[type],
+        colCoord + self.gridSize, rowCoord + self.gridSize,
+        fill=Map2.colors[type],
         width = width
         )
 

@@ -15,6 +15,38 @@
 import heapq
 
 
+
+def createMap():
+    
+    f = open('map.txt')
+    unparsedMap = f.read().split('\n')
+    map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
+    enemyList = []
+
+    for row in range(len(unparsedMap)):
+        for col in range(len(unparsedMap[row])):
+            elem = unparsedMap[row][col]
+            if(elem == 'P'):
+                playerPosition = (row, col)
+            elif(elem == 'A'):
+                    enemyList.append((row, col))
+            elif(elem == 'B'):
+                enemyList.append((row, col))
+            
+            
+            if(elem.isalpha()):
+                map[row].append((elem))
+            else: 
+                map[row].append(int(elem))
+            
+    # map = [[int(col) 
+    #             for col in row] 
+    #             for row in unparsedMap]
+    f.close()
+    # print(map)
+    return map, playerPosition, enemyList
+
+
 class Node:
     def __init__(self, parent=None, position=None):
         self.parent = parent
@@ -85,8 +117,8 @@ def aStar(map, start, end, allowDiagMoves = False):
         iterations+=1
 
         if(iterations > maxIterations):
-            print('exceeded iteration max, returning false')
-            return False
+            print('exceeded iteration max, returning whatever we got')
+            return getPath(currentNode)
 
         
         #get current node and put it on the visited list
@@ -156,42 +188,28 @@ def isLegalMove(map, nodePositionX, nodePositionY):
         return False
 
     # Make sure there's an actual path there
-    if map[nodePositionX][nodePositionY] != 0:
-        return False
+    mapVal = map[nodePositionX][nodePositionY]
+    if mapVal == 0:
+        return True
     
-    return True
+    return False
         
 
 
 def example(print_maze = True):
 
-    maze = [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,] * 2,
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,] * 2,
-            [0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,] * 2,
-            [0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,] * 2,
-            [0,0,0,1,1,0,0,1,1,1,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,] * 2,
-            [0,0,0,1,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,] * 2,
-            [0,0,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1,0,0,0,] * 2,
-            [0,0,0,1,0,1,0,0,0,0,0,1,0,0,0,0,1,1,0,1,0,0,0,0,0,0,1,1,1,0,] * 2,
-            [0,0,0,1,0,1,1,0,1,1,0,1,1,1,0,0,0,0,0,1,0,0,1,1,1,1,1,0,0,0,] * 2,
-            [0,0,0,1,0,1,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,1,0,1,0,1,1,] * 2,
-            [0,0,0,1,0,1,0,1,1,0,1,1,1,1,0,0,1,1,1,1,1,1,1,0,1,0,1,0,0,0,] * 2,
-            [0,0,0,1,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,0,] * 2,
-            [0,0,0,1,0,1,1,1,1,0,1,0,0,1,1,1,0,1,1,1,1,0,1,1,1,0,1,0,0,0,] * 2,
-            [0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,1,] * 2,
-            [0,0,0,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,] * 2,
-            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,] * 2,]
     
-    start = (0, 0)
-    end = (len(maze)-1, len(maze[0])-1)
+    map, player, enemyList = createMap()
 
-    path = aStar(maze, start, end)
+    print('a star time')
+
+    path = aStar(map, player, enemyList[0])
 
     if print_maze:
       for step in path:
-        maze[step[0]][step[1]] = 2
+        map[step[0]][step[1]] = 2
       
-      for row in maze:
+      for row in map:
         line = []
         for col in row:
           if col == 1:
