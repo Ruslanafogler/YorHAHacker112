@@ -5,8 +5,7 @@ import math
 import numpy as np
 
 from classes.Player import Player
-from classes.EnemyA import EnemyA
-from classes.EnemyB import EnemyB
+
 from classes.Map import Map
 from classes.BulletPlayer import PlayerBullet
 
@@ -27,12 +26,14 @@ def appStarted(app):
     # app.obstacleList = [Obstacle(a+4, 5, app.boxSize) for a in range(4)]
     app.map = Map(app.width, app.height, app.gridSize, app.boxSize)
 
+    app.enemyPath = [(-1, 0), 
+    (-1, 0), (0, -1), (-1, 0), (0, -1), (-1, 0), (0, -1), 
+    (-1, 0), (0, -1), (-1, 0), (0, -1), (0, -1), (0, -1), (-1, 0),
+    (-1, 0), (-1, 0), (0, -1), (-1, 0), (0, -1), (-1, 0), (0, -1), 
+    (-1, 0), (0, -1), (-1, 0)]
+
     
     # app.mapGrid = MapGrid()
-
-    app.enemies = []
-    app.enemies.append(EnemyA(4, 4, app.boxSize))
-    app.enemies.append(EnemyB(7, 7, app.boxSize))
 
 
     app.mouseX = 0
@@ -56,46 +57,6 @@ def drawTinyGrid(app, canvas):
         canvas.create_line(0, y, app.width, y, fill='#83f52c')
 
 
-def gonnaHitWallPlayer(app, moveX, moveY):
-    newPlayerCol = app.map.player.gridX+moveX
-    newPlayerRow = app.map.player.gridY+moveY
-    nextSpotValue = app.map.map[newPlayerRow][newPlayerCol]
-    print('player location', app.map.player.gridX, app.map.player.gridY)
-
-    if(nextSpotValue == 1 or
-     nextSpotValue == 4):
-        return True
-    else:
-        return False
-
-def getGridLocation(app, i):
-    return int(i // app.boxSize)
-
-# def gonnaHitWallBullet(app, bullet):
-#     row = int(bullet.y // app.boxSize)
-#     col = int(bullet.x // app.boxSize)
-#     print('bullet r and c', col, row)
-#     spotValue = app.map.map[row][col]
-#     if(spotValue == 1 or spotValue == 4):
-#         print("BULLET HIT WALL")
-#         return True
-#     else:
-#         return False
-    
-
-    
-
-#TEMPORARY
-def movePlayer(app, moveX, moveY):
-    if(not gonnaHitWallPlayer(app, moveX, moveY)):
-        if(app.map.changeViewOffset(moveX, moveY)):
-            app.map.player.gridX+=moveX
-            app.map.player.gridY+=moveY
-        else:
-            app.map.player.move(moveX, moveY)
-        
-
-
 
     
 
@@ -109,8 +70,7 @@ def redrawAll(app, canvas):
     # app.player.redrawAll(canvas, app.mouseX, app.mouseY)
 
 
-    # for enemy in app.enemies:
-    #     enemy.redrawAll(canvas)
+
     canvas.create_text(100, 80, text=f'Player Angle {app.map.player.angle * 180/math.pi}')
     canvas.create_text(100, 110, text=f'pointer Angle {(app.map.player.angle-app.map.player.theta)*180/math.pi}')
     drawBigGrid(app, canvas)
@@ -126,15 +86,18 @@ def playerFire(app):
 def keyPressed(app, event):
     playerMovement = 1
     if(event.key == 'a'):
-        movePlayer(app, -playerMovement, 0)
+        app.map.movePlayer(-playerMovement, 0)
     if(event.key == 'd' ):
-        movePlayer(app, playerMovement, 0)
+        app.map.movePlayer(playerMovement, 0)
     if(event.key == 'w'):
-        movePlayer(app, 0, -playerMovement)
+        app.map.movePlayer(0, -playerMovement)
     if(event.key == 's'):
-        movePlayer(app, 0, playerMovement)
+        app.map.movePlayer(0, playerMovement)
     if(event.key == 'Space'):
         playerFire(app)
+    # if(event.key == 'r'): 
+    #     print('called')
+    #     app.map.moveEnemy(app.map.enemyList[0], (0, 1))
 
 def mouseMoved(app, event):
     app.mouseX = event.x
@@ -149,6 +112,16 @@ def timerFired(app):
             app.playerBullets.remove(bullet)
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
             app.playerBullets.remove(bullet)
+
+    
+    for enemy in app.map.enemyList:
+        enemy.incTimer()
+        if(enemy.movements):
+            if(enemy.timer > enemy.coolDown):
+                app.map.enemyAutoTravel(enemy)
+                enemy.timer = 0
+
+            
         
         
     

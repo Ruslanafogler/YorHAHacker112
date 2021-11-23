@@ -4,15 +4,15 @@ import math
 import numpy as np
 
 from .Player import Player
-from .EnemyA import EnemyA
-from .EnemyB import EnemyB
+from .Enemy import Enemy
 from .convertToGrid import convertToGrid
+from .AStar import isLegalMove
 
 
 
 def createMap(boxSize):
     
-    f = open('classes/map.txt')
+    f = open('classes/map2.txt')
     unparsedMap = f.read().split('\n')
     map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
     enemyList = []
@@ -20,14 +20,13 @@ def createMap(boxSize):
     for row in range(len(unparsedMap)):
         for col in range(len(unparsedMap[row])):
             elem = unparsedMap[row][col]
+           
             if(elem == 'P'):
                 playerPosition = (col, row)
-            elif(elem == 'A'):
-                    enemyList.append(EnemyA(col, row, boxSize))
-            elif(elem == 'B'):
-                enemyList.append(EnemyB(col, row, boxSize))
+            elif(elem == 'A' or elem == 'B'):
+                    enemyList.append(Enemy(elem, playerPosition, col, row, boxSize))
             
-            
+           
             if(elem.isalpha()):
                 map[row].append((elem))
             else: 
@@ -64,7 +63,9 @@ class Map:
         self.rowLength, self.colLength = getRowAndColLength(self.map)
 
         # print('player position', self.playerPosition)
-        # print(self.enemyList)
+        for enemy in self.enemyList:
+            enemy.initMovements(self.map, self.playerPosition)
+
 
         # print("NEW MAP")
         # print(convertToGrid(self.map))
@@ -86,6 +87,73 @@ class Map:
         
 
 
+    def enemyAutoTravel(self, enemy):
+        enemy.movementIndex+=1
+        Map.moveEnemy(self, enemy, enemy.getMovement())
+
+
+
+    def moveEnemy(self, enemy, movement):
+        #printMap(self)
+        rowInc = movement[0]
+        colInc = movement[1]
+        newGridX = enemy.gridX + colInc
+        newGridY = enemy.gridY + rowInc
+        
+        print(enemy)
+        if(isLegalMove(self.map, newGridY, newGridX)):
+            self.map[enemy.gridY][enemy.gridX] = 0
+            self.map[newGridY][newGridX] = enemy.type
+            enemy.move(colInc, rowInc)
+            print(enemy)
+            #printMap(self)
+        else:
+            print('illegal move enemy')
+
+        
+
+    def gonnaHitWallPlayer(self, moveX, moveY):
+        newPlayerCol = self.player.gridX+moveX
+        newPlayerRow = self.player.gridY+moveY
+        nextSpotValue = self.map[newPlayerRow][newPlayerCol]
+        print('player location', self.player.gridX, self.player.gridY)
+
+        if(nextSpotValue == 1 or
+        nextSpotValue == 4):
+            return True
+        else:
+            return False
+
+    def getGridLocation(app, i):
+        return int(i // app.boxSize)
+
+    # def gonnaHitWallBullet(app, bullet):
+    #     row = int(bullet.y // app.boxSize)
+    #     col = int(bullet.x // app.boxSize)
+    #     print('bullet r and c', col, row)
+    #     spotValue = self.map[row][col]
+    #     if(spotValue == 1 or spotValue == 4):
+    #         print("BULLET HIT WALL")
+    #         return True
+    #     else:
+    #         return False
+        
+
+        
+
+    def movePlayer(self, moveX, moveY):
+        if(not Map.gonnaHitWallPlayer(self, moveX, moveY)):
+            if(Map.changeViewOffset(self, moveX, moveY)):
+                self.player.gridX+=moveX
+                self.player.gridY+=moveY
+            else:
+                self.player.move(moveX, moveY)
+                for enemy in self.enemyList:
+                    playerPosition = (self.player.gridY, self.player.gridX)
+                    enemy.initMovements(self.map, playerPosition)
+                    
+
+    
     def changeViewOffset(self, dx, dy):
         # print("BTW, max row and col lengths", self.rowLength, self.colLength)
 
@@ -138,10 +206,6 @@ class Map:
                         enemy = Map.findEnemy(self, r, c)
                         if(enemy):
                             Map.drawEnemy(self, canvas, enemy, drawCol, drawRow)
-
-
-                    
-
                 drawCol+=1
             drawRow+=1
 
@@ -190,6 +254,24 @@ class Map:
         fill=Map.colors[type],
         width = width
         )
+
+
+def printMap(self):
+    
+    for row in self.map:
+        line = []
+        for col in row:
+            if col == 'P':
+                line.append("P")
+            elif col == 'B' or col == 'A':
+                line.append("E")
+            elif col == 1:
+                line.append("\u2588")
+            elif col == 0:
+                line.append(" ")
+            elif col == 2:
+                line.append(".")
+        print("".join(line))        
 
 
 

@@ -3,7 +3,7 @@ import math
 import numpy as np
 from .Moveable import Moveable
 
-
+##OBSOLETE FILE< SEE ENEMY INSTEAD
 
 class EnemyB(Moveable):
     def __init__(self, gridX, gridY, boxSize):

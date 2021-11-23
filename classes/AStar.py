@@ -10,6 +10,10 @@
 #ryancollingwood bc he used queues
 #https://gist.github.com/ryancollingwood/32446307e976a11a1185a5394d6657bc
 
+#ok ngl I used this one the most by far, way more than ^^
+#https://github.com/BaijayantaRoy/Medium-Article/blob/master/A_Star.ipynb 
+
+
 #enemy coord to player
 
 import heapq
@@ -17,7 +21,7 @@ import math
 
 
 
-def createMap():
+def createTestMap():
     
     f = open('map.txt')
     unparsedMap = f.read().split('\n')
@@ -49,9 +53,10 @@ def createMap():
 
 
 class Node:
-    def __init__(self, parent=None, position=None):
+    def __init__(self, parent=None, position=None, movement=None):
         self.parent = parent
         self.position = position
+        self.movement = movement
 
         self.g = 0
         self.h = 0
@@ -68,7 +73,7 @@ class Node:
 
     
 
-#backtracking for final path
+#obtaining the final path by going back through the path of nodes
 def getPath(node):
     path = []
     currentNode = node
@@ -76,6 +81,17 @@ def getPath(node):
         path.append(currentNode.position)
         currentNode = currentNode.parent
     return path[::-1]
+
+
+def getMovements(node):
+    movements = []
+    currentNode = node
+    while currentNode is not None:
+        movements.append(currentNode.movement)
+        currentNode = currentNode.parent
+    movements = movements[::-1]
+    #don't include first, because first node's parent is None
+    return movements[1::]
 
 #heursitic -- euclidean in this case
 def getDistance(a,b):
@@ -119,7 +135,8 @@ def aStar(map, start, end, allowDiagMoves = False):
 
         if(iterations > maxIterations):
             print('exceeded iteration max, returning whatever we got')
-            return getPath(currentNode)
+            #return getPath(currentNode)
+            return getMovements(currentNode)
 
         
         #get the node with the least f and set that as our current node
@@ -140,9 +157,15 @@ def aStar(map, start, end, allowDiagMoves = False):
 
 
         #we found the player. Return the path
-        if(currentNode == endNode):
-            path = getPath(currentNode)
-            return path
+
+        #usually checks if currentNode == endNode
+        #however I want the enemy to stop a distance away from the player
+        if(currentNode.f != 0 and currentNode.f < 30):
+            print("DISTANCES", currentNode.f)
+            # path = getPath(currentNode)
+            # return path
+            return getMovements(currentNode)
+
         
 
         neighbors = []
@@ -150,17 +173,17 @@ def aStar(map, start, end, allowDiagMoves = False):
         for possibleMove in movements:
             dx = possibleMove[0]
             dy = possibleMove[1]
-            nodePositionX = currentNode.position[0] + dx
-            nodePositionY = currentNode.position[1] + dy
-            # print(nodePositionX, nodePositionY)
+            rowInc = currentNode.position[0] + dx
+            colInc = currentNode.position[1] + dy
+            # print(rowInc, colInc)
         
             #make sure its not a wall or off the map
-            if(isLegalMove(map, nodePositionX, nodePositionY) == False):
+            if(isLegalMove(map, rowInc, colInc) == False):
                 continue
             
             #create new node and add it the list of neighbors for cur node
             #Node creation -> (current, parent, position)
-            newNode = Node(currentNode, (nodePositionX, nodePositionY))
+            newNode = Node(currentNode, (rowInc, colInc), (dx, dy))
 
             neighbors.append(newNode)
 
@@ -199,56 +222,61 @@ def aStar(map, start, end, allowDiagMoves = False):
     #guess we couldn't find a path at all, huh..
     return None
         
-def isLegalMove(map, nodePositionX, nodePositionY):
+def isLegalMove(map, rowInc, colInc):
     # Make sure within range of the map
-    if nodePositionX > (len(map) - 1) or nodePositionX < 0 or nodePositionY > (len(map[len(map)-1]) -1) or nodePositionY < 0:
+    if rowInc > (len(map) - 1) or rowInc < 0 or colInc > (len(map[len(map)-1]) -1) or colInc < 0:
         return False
 
     # Make sure there's an actual path there
-    mapVal = map[nodePositionX][nodePositionY]
+    mapVal = map[rowInc][colInc]
     if mapVal == 0 or mapVal == 'P':
         return True
     else:
         return False
         
 
-
-def example(print_maze = True):
-
+def printMap(map, path):
+    for step in path:
+        map[step[0]][step[1]] = 2
     
-    map, player, enemyList = createMap()
+    for row in map:
+        line = []
+        for col in row:
+            if col == 'P':
+                line.append("P")
+            elif col == 'B' or col == 'A':
+                line.append("E")
+            elif col == 1:
+                line.append("\u2588")
+            elif col == 0:
+                line.append(" ")
+            elif col == 2:
+                line.append(".")
+        print("".join(line))
+
+def testAStar(print_maze = True):
+    
+    map, player, enemyList = createTestMap()
 
     enemy = enemyList[2]
 
     print('a star time')
     print(enemy, player)
 
-    path = aStar(map, enemy, player)
+    #path
+    movements = aStar(map, enemy, player)
 
-    if print_maze:
-      for step in path:
-        map[step[0]][step[1]] = 2
-      
-      for row in map:
-        line = []
-        for col in row:
-          if col == 'P':
-              line.append("P")
-          elif col == 'B' or col == 'A':
-            line.append("E")
-          elif col == 1:
-            line.append("\u2588")
-          elif col == 0:
-            line.append(" ")
-          elif col == 2:
-            line.append(".")
-        print("".join(line))
+    # if print_maze:
+    #     printMap(map, path)
 
-    print(path, 'for', enemy, 'to', player)
+
+    print(movements, 'for', enemy, 'to', player)
+    print('\n\n\n')
+    print(movements)
 
 
 
-example()
+#testAStar()
         
 
 
