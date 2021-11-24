@@ -20,6 +20,7 @@ def appStarted(app):
 
     app.boxSize = 45
     app.gridSize = 15
+    app.gameOver = False
 
 
     # app.player = Player(6, 8, app.boxSize)
@@ -57,29 +58,63 @@ def drawTinyGrid(app, canvas):
     for y in range(0, app.height, app.gridSize):
         canvas.create_line(0, y, app.width, y, fill='#83f52c')
 
+def drawPlayerHealth(app, canvas):
+    healthDisplayLength = app.boxSize*9
+    healthDisplayWidth = app.boxSize
+
+    healthRectLen = app.boxSize*7
+    healthRectWidth = 5
+
+    textMargin = 15
+
+    healthBarX0 = app.boxSize//2 + textMargin
+    healthBarY0 = app.boxSize//2 - healthRectWidth
+
+    healthBarX1 = app.boxSize//2+15 + healthRectLen
+    healthBarY1 = app.boxSize//2 + healthRectWidth
+
+
+
+
+    canvas.create_rectangle(0,0, healthDisplayLength, healthDisplayWidth, fill = '#ffffff', width=0)
+    canvas.create_text(app.boxSize//2, app.boxSize//2, text="HP:")
+    canvas.create_rectangle(healthBarX0, healthBarY0, healthBarX1, healthBarY1, fill='#dad3c5', width=0)
+    if(app.map.player.maxHealth != 0):
+        fractionOfHealth = app.map.player.health/app.map.player.maxHealth
+        canvas.create_rectangle(healthBarX0, healthBarY0, healthBarX1*(fractionOfHealth), healthBarY1, fill='#98fb98', width=0)
+
 
 
     
 
 def redrawAll(app, canvas):
-    
-    #canvas.create_rectangle(0,0, app.width, app.height, fill='#7f7c69',)
-    app.map.redrawAll(canvas, app.mouseX, app.mouseY)
-    # app.mapGrid.redrawAll(canvas)
-    for bullet in app.playerBullets:
-        bullet.redrawAll(canvas)
 
-    for enemy in app.map.enemyList:
-        for bullet in enemy.bullets:
+    if(not app.gameOver):
+        
+        #canvas.create_rectangle(0,0, app.width, app.height, fill='#7f7c69',)
+        app.map.redrawAll(canvas, app.mouseX, app.mouseY)
+        # app.mapGrid.redrawAll(canvas)
+        for bullet in app.playerBullets:
             bullet.redrawAll(canvas)
-    # app.player.redrawAll(canvas, app.mouseX, app.mouseY)
+
+        for enemy in app.map.enemyList:
+            for bullet in enemy.bullets:
+                bullet.redrawAll(canvas)
+        # app.player.redrawAll(canvas, app.mouseX, app.mouseY)
 
 
 
-    canvas.create_text(100, 80, text=f'Player Angle {app.map.player.angle * 180/math.pi}')
-    canvas.create_text(100, 110, text=f'pointer Angle {(app.map.player.angle-app.map.player.theta)*180/math.pi}')
-    drawBigGrid(app, canvas)
-    #drawTinyGrid(app, canvas)
+        # canvas.create_text(100, 80, text=f'Player Angle {app.map.player.angle * 180/math.pi}')
+        # canvas.create_text(100, 110, text=f'pointer Angle {(app.map.player.angle-app.map.player.theta)*180/math.pi}')
+
+
+
+        drawBigGrid(app, canvas)
+        drawPlayerHealth(app, canvas)
+        #drawTinyGrid(app, canvas)
+    else:
+        canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
+        canvas.create_text(app.width//2, app.height//2, text=f'Game Over', fill='white')
 
 
 def playerFireBullet(app):
@@ -113,7 +148,20 @@ def mousePressed(app, event):
 
 def bulletController(app, bulletList, isPlayerBullet):
     for bullet in bulletList:
-        if(not bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, isPlayerBullet)):
+        bulletResult = bullet.linearTravel(app.map.map, app.map.offsetY, app.map.offsetX, isPlayerBullet)
+        #if it returns something that's not true, we must have hit something
+        if(bulletResult != 'success'):
+            if(bulletResult == 'player'):
+                bullet.damage(app.map.player)
+
+            elif(isinstance(bulletResult, tuple)):
+                enemy = app.map.findEnemy(bulletResult[0], bulletResult[1])
+                if(enemy):
+                    bullet.damage(enemy)
+                else:
+                    print('bruh wtf there should be an enemy here')
+
+
             if(bullet in bulletList):
                 bulletList.remove(bullet)
         if(bullet.x < 0 or bullet.y < 0 or bullet.x > app.width or bullet.y > app.height):
@@ -121,6 +169,8 @@ def bulletController(app, bulletList, isPlayerBullet):
                 bulletList.remove(bullet)    
 
 def timerFired(app):
+    if(app.map.player.health <= 0):
+        app.gameOver = True
 
     bulletController(app, app.playerBullets, True)
     for enemy in app.map.enemyList:

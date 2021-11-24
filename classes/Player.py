@@ -12,6 +12,8 @@ class Player(Moveable):
         self.y = gridY*boxSize+boxSize//2    
         self.angle = math.pi/2
         self.theta = math.pi/2
+        self.health = 50
+        self.maxHealth = 50
 
         
         self.width = 20

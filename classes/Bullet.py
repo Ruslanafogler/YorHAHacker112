@@ -25,7 +25,8 @@ class Bullet:
   
   
     def damage(self, other):
-        other.health-=self.bulletDamage        
+        other.health-=self.bulletDamage
+        print(other, other.health)        
 
 
     def linearTravel(self, map, minRowScreen, minColScreen, isPlayerBullet):
@@ -42,17 +43,17 @@ class Bullet:
             return False
         elif(isPlayerBullet and (mapVal == 'A' or mapVal == 'B')):
             #we hit an enemy
-            print('hit an enemy')
-            return 'enemy'
+            #print('hit an enemy')
+            return (actualGridRow, actualGridCol)
         elif(not isPlayerBullet and (mapVal == 'P')):
             #we hit an enemy
-            print('hit the player')
+            #print('hit the player')
             return 'player'
         else:
             # print(self, 'traveling')
             self.x+=Bullet.calcLinearDx(self)
             self.y+=Bullet.calcLinearDy(self)
-            return True
+            return 'success'
 
 
     
