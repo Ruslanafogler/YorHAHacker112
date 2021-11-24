@@ -11,12 +11,8 @@ import numpy as np
 #contains bullet, playerbullet, enemybullet classes
 
 class Bullet:
-    def __init__(self, initGridX, initGridY, playerX, playerY, boxSize, angle):
+    def __init__(self, playerX, playerY, boxSize, angle):
         
-        
-        self.gridX = initGridX
-        self.gridY = initGridY
-
         self.x = playerX
         self.y = playerY    
         
@@ -75,8 +71,8 @@ class Bullet:
 
 
 class EnemyBullet(Bullet):
-    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle, type):
-        super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
+    def __init__(self, playerX, playerY, boxSize, angle, type):
+        super().__init__(playerX, playerY, boxSize, angle)
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6
@@ -116,8 +112,8 @@ class EnemyBullet(Bullet):
 
 
 class PlayerBullet(Bullet):
-    def __init__(self, gridX, gridY, playerX, playerY, boxSize, angle):
-        super().__init__(gridX, gridY, playerX, playerY, boxSize, angle)
+    def __init__(self, playerX, playerY, boxSize, angle):
+        super().__init__(playerX, playerY, boxSize, angle)
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6

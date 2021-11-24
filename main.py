@@ -145,9 +145,8 @@ def redrawAll(app, canvas):
 
 
 def playerFireBullet(app):
-    app.playerBullets.append(PlayerBullet(app.map.player.gridX, app.map.player.gridY,
-                                          app.map.player.x, app.map.player.y, 
-                                            app.boxSize, app.map.player.angle))
+    app.playerBullets.append(PlayerBullet(app.map.player.x, app.map.player.y, 
+                                          app.boxSize, app.map.player.angle))
 
 def movePlayer(app, dcol, drow):
     app.map.movePlayer(dcol, drow)
@@ -222,8 +221,7 @@ def timerFired(app):
         enemy.incTimers()
         #enemy fires at the player:
         if(enemy.shootingTimer > enemy.fireCoolDown):
-            enemy.fireBullet(EnemyBullet(enemy.gridX, enemy.gridY,
-                                        enemy.x, enemy.y,
+            enemy.fireBullet(EnemyBullet(enemy.x, enemy.y,
                                         enemy.boxSize, enemy.angle,
                                         enemy.type))
             enemy.shootingTimer = 0
