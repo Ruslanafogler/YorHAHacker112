@@ -229,7 +229,7 @@ class Map:
                         enemy = Map.findEnemy(self, r, c)
                         if(enemy):
                             Map.drawEnemy(self, canvas, enemy, drawCol, drawRow)
-                            # Map.drawEnemyHealth(self, enemy, canvas)
+                            Map.drawEnemyHealth(self, enemy, canvas)
                 drawCol+=1
             drawRow+=1
 
@@ -277,7 +277,6 @@ class Map:
 
 
     def drawPlayerHealth(self, canvas):
-
         healthDisplayLength = self.boxSize*10
         healthDisplayWidth = self.boxSize
 
@@ -292,47 +291,51 @@ class Map:
         healthBarX1 = self.boxSize//2+15 + healthRectLen
         healthBarY1 = self.boxSize//2 + healthRectWidth
 
-
-
         #white display box
         canvas.create_rectangle(0,0, healthDisplayLength, healthDisplayWidth, fill = '#ffffff', width=0)
-        
         #hp text
         canvas.create_text(textMargin+self.boxSize//2, self.boxSize//2, text="HP:", font='Helvetica 14 bold')
-        
         #max health container
         canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, 
                                 healthBarX1, healthBarY1, 
                                 fill=Map.colors['obstacle'], width=0)
-           #actual health container
+        #actual health container
         if(self.player.health >= 0):
             #0.18 bc anything lower and the health bar starts going backwards when its too low
             fractionOfHealth = max(0.18, abs(self.player.health/self.player.maxHealth))
             if(fractionOfHealth > 0.3):
+                textColor = 'black'
                 color = Map.colors['green']
             else: 
+                textColor=Map.colors['red']
                 color = Map.colors['red']
-            canvas.create_rectangle(healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
+            canvas.create_text(healthBarX1+1.5*textMargin, self.boxSize//2, 
+                                text=f"{self.player.health}/{self.player.maxHealth}",
+                                fill=textColor,  font='Helvetica 14 bold')
+            canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
+
+    
 
 
 
 
+    #ther's a big issue with this one chief
     def drawEnemyHealth(self, enemy, canvas):
 
-        healthRectLen = self.boxSize*2
-        healthRectWidth = 1.5
+        healthRectLen = self.boxSize*20
+        healthRectWidth = 20
 
-        healthBarX0 = enemy.x+15
-        healthBarY0 = enemy.y+15
+        healthBarX0 = enemy.x+20
+        healthBarY0 = enemy.y+20
 
         healthBarX1 = healthBarX0+healthRectLen
-        healthBarY1 = self.boxSize//2 + healthRectWidth
+        healthBarY1 = healthBarY0 + healthRectWidth
         
         
         #max health container
         canvas.create_rectangle(healthBarX0, healthBarY0, 
                                 healthBarX1, healthBarY1, 
-                                fill=Map.colors['obstacle'], width=0)
+                                fill='#ffffff', width=0)
 
         #actual health container
         if(enemy.health >= 0):
