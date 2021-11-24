@@ -17,11 +17,11 @@ from classes.Bullet import PlayerBullet, EnemyBullet
 def appStarted(app):
     app.width = 900
     app.height = 900
+    app.timerDelay = 5
 
     app.boxSize = 45
     app.gridSize = 15
     app.gameOver = False
-
 
     # app.player = Player(6, 8, app.boxSize)
     app.playerBullets = []
@@ -58,33 +58,6 @@ def drawTinyGrid(app, canvas):
     for y in range(0, app.height, app.gridSize):
         canvas.create_line(0, y, app.width, y, fill='#83f52c')
 
-def drawPlayerHealth(app, canvas):
-    healthDisplayLength = app.boxSize*9
-    healthDisplayWidth = app.boxSize
-
-    healthRectLen = app.boxSize*7
-    healthRectWidth = 5
-
-    textMargin = 15
-
-    healthBarX0 = app.boxSize//2 + textMargin
-    healthBarY0 = app.boxSize//2 - healthRectWidth
-
-    healthBarX1 = app.boxSize//2+15 + healthRectLen
-    healthBarY1 = app.boxSize//2 + healthRectWidth
-
-
-
-
-    canvas.create_rectangle(0,0, healthDisplayLength, healthDisplayWidth, fill = '#ffffff', width=0)
-    canvas.create_text(app.boxSize//2, app.boxSize//2, text="HP:")
-    canvas.create_rectangle(healthBarX0, healthBarY0, healthBarX1, healthBarY1, fill='#dad3c5', width=0)
-    if(app.map.player.maxHealth != 0):
-        fractionOfHealth = app.map.player.health/app.map.player.maxHealth
-        canvas.create_rectangle(healthBarX0, healthBarY0, healthBarX1*(fractionOfHealth), healthBarY1, fill='#98fb98', width=0)
-
-
-
     
 
 def redrawAll(app, canvas):
@@ -110,7 +83,7 @@ def redrawAll(app, canvas):
 
 
         drawBigGrid(app, canvas)
-        drawPlayerHealth(app, canvas)
+        app.map.drawPlayerHealth(canvas)
         #drawTinyGrid(app, canvas)
     else:
         canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
@@ -122,17 +95,31 @@ def playerFireBullet(app):
                                           app.map.player.x, app.map.player.y, 
                                             app.boxSize, app.map.player.angle))
 
+def movePlayer(app, dcol, drow):
+    app.map.movePlayer(dcol, drow)
+    addBulletOffset(app, dcol, drow, app.playerBullets)
+    for enemy in app.map.enemyList:
+        addBulletOffset(app, dcol, drow, enemy.bullets)
+
+
+def addBulletOffset(app, dcol, drow, bulletList):
+    for bullet in bulletList:
+        bullet.x-=dcol*app.boxSize
+        bullet.y-=drow*app.boxSize
+
+
+
 
 def keyPressed(app, event):
     playerMovement = 1
     if(event.key == 'a'):
-        app.map.movePlayer(-playerMovement, 0)
+        movePlayer(app, -playerMovement, 0)
     if(event.key == 'd' ):
-        app.map.movePlayer(playerMovement, 0)
+        movePlayer(app, playerMovement, 0)
     if(event.key == 'w'):
-        app.map.movePlayer(0, -playerMovement)
+        movePlayer(app, 0, -playerMovement)
     if(event.key == 's'):
-        app.map.movePlayer(0, playerMovement)
+        movePlayer(app, 0, playerMovement)
     if(event.key == 'Space'):
         playerFireBullet(app)
     # if(event.key == 'r'): 
@@ -173,9 +160,12 @@ def timerFired(app):
         app.gameOver = True
 
     bulletController(app, app.playerBullets, True)
+    
     for enemy in app.map.enemyList:
-        enemy.incTimers()
+        if(enemy.health <= 0):
+            app.map.enemyList.remove(enemy)
 
+        enemy.incTimers()
         #enemy fires at the player:
         if(enemy.shootingTimer > enemy.fireCoolDown):
             enemy.fireBullet(EnemyBullet(enemy.gridX, enemy.gridY,
@@ -191,6 +181,7 @@ def timerFired(app):
             if(enemy.movementTimer > enemy.movementCoolDown):
                 app.map.enemyAutoTravel(enemy)
                 enemy.movementTimer = 0
+        
                 
 
             

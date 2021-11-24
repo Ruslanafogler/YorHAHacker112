@@ -8,6 +8,8 @@ import numpy as np
 #referenced Rabbid76's stackoverflow answer here
 #https://stackoverflow.com/questions/59977052/shooting-a-bullet-in-pygame-in-the-direction-of-mouse
 
+#contains bullet, playerbullet, enemybullet classes
+
 class Bullet:
     def __init__(self, initGridX, initGridY, playerX, playerY, boxSize, angle):
         

@@ -234,7 +234,8 @@ def isLegalMove(map, rowInc, colInc):
     else:
         return False
         
-
+#print map method referenced from this dude's astar github
+#https://gist.github.com/ryancollingwood/32446307e976a11a1185a5394d6657bc
 def printMap(map, path):
     for step in path:
         map[step[0]][step[1]] = 2

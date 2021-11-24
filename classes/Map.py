@@ -162,8 +162,13 @@ class Map:
     def movePlayer(self, moveX, moveY):
         if(not Map.gonnaHitWallPlayer(self, moveX, moveY)):
             if(Map.changeViewOffset(self, moveX, moveY)):
-                self.player.gridX+=moveX
-                self.player.gridY+=moveY
+                # self.player.gridX+=moveX
+                # self.player.gridY+=moveY
+                newGridX = self.player.gridX + moveX
+                newGridY = self.player.gridY + moveY
+                self.map[self.player.gridY][self.player.gridX] = 0
+                self.map[newGridY][newGridX] = 'P' 
+                self.player.gridX, self.player.gridY = newGridX, newGridY            
             else:
                 self.player.move(moveX, moveY)
                 for enemy in self.enemyList:
@@ -224,6 +229,7 @@ class Map:
                         enemy = Map.findEnemy(self, r, c)
                         if(enemy):
                             Map.drawEnemy(self, canvas, enemy, drawCol, drawRow)
+                            # Map.drawEnemyHealth(self, enemy, canvas)
                 drawCol+=1
             drawRow+=1
 
@@ -238,7 +244,9 @@ class Map:
     colors = {
         'offMap': '#817b69',
         'onMap': '#beb99c',
-        'obstacle': '#dad3c5'
+        'obstacle': '#dad3c5',
+        'green': '#98fb98',
+        'red': '#ff6961',
     }
 
     def drawEnemy(self, canvas, enemy, r, c):
@@ -266,6 +274,78 @@ class Map:
         fill=Map.colors[type],
         width = width
         )
+
+
+    def drawPlayerHealth(self, canvas):
+
+        healthDisplayLength = self.boxSize*10
+        healthDisplayWidth = self.boxSize
+
+        healthRectLen = self.boxSize*7
+        healthRectWidth = 5
+
+        textMargin = 20
+
+        healthBarX0 = self.boxSize//2 + textMargin
+        healthBarY0 = self.boxSize//2 - healthRectWidth
+
+        healthBarX1 = self.boxSize//2+15 + healthRectLen
+        healthBarY1 = self.boxSize//2 + healthRectWidth
+
+
+
+        #white display box
+        canvas.create_rectangle(0,0, healthDisplayLength, healthDisplayWidth, fill = '#ffffff', width=0)
+        
+        #hp text
+        canvas.create_text(textMargin+self.boxSize//2, self.boxSize//2, text="HP:", font='Helvetica 14 bold')
+        
+        #max health container
+        canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, 
+                                healthBarX1, healthBarY1, 
+                                fill=Map.colors['obstacle'], width=0)
+           #actual health container
+        if(self.player.health >= 0):
+            #0.18 bc anything lower and the health bar starts going backwards when its too low
+            fractionOfHealth = max(0.18, abs(self.player.health/self.player.maxHealth))
+            if(fractionOfHealth > 0.3):
+                color = Map.colors['green']
+            else: 
+                color = Map.colors['red']
+            canvas.create_rectangle(healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
+
+
+
+
+    def drawEnemyHealth(self, enemy, canvas):
+
+        healthRectLen = self.boxSize*2
+        healthRectWidth = 1.5
+
+        healthBarX0 = enemy.x+15
+        healthBarY0 = enemy.y+15
+
+        healthBarX1 = healthBarX0+healthRectLen
+        healthBarY1 = self.boxSize//2 + healthRectWidth
+        
+        
+        #max health container
+        canvas.create_rectangle(healthBarX0, healthBarY0, 
+                                healthBarX1, healthBarY1, 
+                                fill=Map.colors['obstacle'], width=0)
+
+        #actual health container
+        if(enemy.health >= 0):
+            #0.18 bc anything lower and the health bar starts going backwards when its too low
+            fractionOfHealth = max(0.2, abs(enemy.health/enemy.maxHealth))
+            if(fractionOfHealth > 0.3):
+                color = Map.colors['green']
+            else: 
+                color = Map.colors['red']
+            canvas.create_rectangle(healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
+
+
+
 
 
 def printMap(self):

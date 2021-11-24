@@ -20,6 +20,8 @@ class Enemy(Moveable):
         self.aimCoolDown = 0.1
         self.fireCoolDown = 9
         self.movementCoolDown = 0.8
+        self.health = 10
+        self.maxHealth=10
 
 
         self.movements = []
