@@ -59,61 +59,6 @@ def drawTinyGrid(app, canvas):
         canvas.create_line(0, y, app.width, y, fill='#83f52c')
 
 
-# def drawPlayerHealth(app, canvas):
-#     healthColor = {'green': '#98fb98', 'red': '#ff6961'}
-
-
-#     healthDisplayLength = app.boxSize*10
-#     healthDisplayWidth = app.boxSize
-
-#     healthRectLen = app.boxSize*7
-#     healthRectWidth = 5
-
-#     textMargin = 20
-
-#     healthBarX0 = app.boxSize//2 + textMargin
-#     healthBarY0 = app.boxSize//2 - healthRectWidth
-
-#     healthBarX1 = app.boxSize//2+15 + healthRectLen
-#     healthBarY1 = app.boxSize//2 + healthRectWidth
-
-
-
-#     #white display box
-#     canvas.create_rectangle(0,0, healthDisplayLength, healthDisplayWidth, fill = '#ffffff', width=0)
-    
-#     #hp text
-#     canvas.create_text(textMargin+app.boxSize//2, app.boxSize//2, text="HP:", font='Helvetica 14 bold')
-    
-#     #max health container
-#     canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, 
-#                             healthBarX1, healthBarY1, 
-#                             fill='#dad3c5', width=0)
-
-
-
-#     #actual health container
-#     if(app.map.player.health >= 0):
-        
-#         #0.18 bc anything lower and the health bar starts going backwards when its too low
-#         fractionOfHealth = max(0.18, abs(app.map.player.health/app.map.player.maxHealth))
-#         if(fractionOfHealth > 0.3):
-#             textColor = 'black'
-#             color = healthColor['green']
-#         else: 
-#             textColor=healthColor['red']
-#             color = healthColor['red']
-
-#         canvas.create_text(healthBarX1+1.5*textMargin, app.boxSize//2, 
-#                             text=f"{app.map.player.health}/{app.map.player.maxHealth}",
-#                             fill=textColor,  font='Helvetica 14 bold')
-
-#         canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
-
-
-
-    
-
 def redrawAll(app, canvas):
 
     if(not app.gameOver):
@@ -127,14 +72,6 @@ def redrawAll(app, canvas):
         for enemy in app.map.enemyList:
             for bullet in enemy.bullets:
                 bullet.redrawAll(canvas)
-        # app.player.redrawAll(canvas, app.mouseX, app.mouseY)
-
-
-
-        # canvas.create_text(100, 80, text=f'Player Angle {app.map.player.angle * 180/math.pi}')
-        # canvas.create_text(100, 110, text=f'pointer Angle {(app.map.player.angle-app.map.player.theta)*180/math.pi}')
-
-
 
         drawBigGrid(app, canvas)
         app.map.drawPlayerHealth(canvas)
@@ -159,8 +96,6 @@ def addBulletOffset(app, dcol, drow, bulletList):
     for bullet in bulletList:
         bullet.x-=dcol*app.boxSize
         bullet.y-=drow*app.boxSize
-
-
 
 
 def keyPressed(app, event):
@@ -233,11 +168,6 @@ def timerFired(app):
             if(enemy.movementTimer > enemy.movementCoolDown):
                 app.map.enemyAutoTravel(enemy)
                 enemy.movementTimer = 0
-        
-                
-
-            
-        
         
     
         

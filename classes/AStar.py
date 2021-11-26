@@ -65,6 +65,9 @@ class Node:
     def __eq__(self, other):
         return self.position == other.position
 
+    def __str__(self):
+        return f'Node with position: {self.position}, movement:{self.movement}'
+
     # def __lt__(self, other):
     #     return self.f < other.f
 
@@ -100,9 +103,6 @@ def getDistance(a,b):
 
     return (x1-x2)**2 + (y1-y2)**2
 
-
-
-    
 
 def aStar(map, start, end, allowDiagMoves = False):
 
@@ -194,6 +194,7 @@ def aStar(map, start, end, allowDiagMoves = False):
             #we do not want to go back the way we came
             #(basically generates a list of every neighbor that's in visited,
             # and sees if that list is bigger than 0 or not)
+
             if(len([visitedNeighbor for visitedNeighbor in visitedList if visitedNeighbor == neighbor]) > 0):
                 continue
 
@@ -208,10 +209,10 @@ def aStar(map, start, end, allowDiagMoves = False):
 
             # print('neighbor', neighbor.position, neighbor.f)
 
-            #check if the neighbor is already in the unVisitedList and
-            #the g cost is lower
-            if(len([i for i in unVisitedList if i == neighbor 
-            and neighbor.g > i.g ]) > 0):
+            #check if you've already gone to the tile before
+            #and if you're taking an extra step than before(g cost)
+            if(len([node for node in unVisitedList if node == neighbor 
+            and neighbor.g > node.g ]) > 0):
                 continue
             
             #ok, we can add the neighbor to our unVisitedList
@@ -277,7 +278,7 @@ def testAStar(print_maze = True):
 
 
 
-#testAStar()
+# testAStar()
         
 
 

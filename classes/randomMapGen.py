@@ -3,33 +3,6 @@ import math
 import random
 import numpy as np
 
-# 1144444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
-# 4444111111111111111111111111114444444444444
-# 4444110000000000000000000000114444444444444
-# 444411000P000000000000000000114444444444444
-# 4444110000000000000000A00000114444444444444
-# 4444110000000000000000000000114444444444444
-# 4444110000000000000000000000114444444444444
-# 4444110000000000001111110000114444444444444
-# 4444110001100000000000000000114444444444444
-# 4444110000000000000000000000114444444444444
-# 444411000A000000111110000000114444444444444
-# 4444110000000000000000000000114444444444444
-# 4444110000000000000000000000114444444444444
-# 4444110000100000000000110000114444444444444
-# 4444110000100000000000000000114444444444444
-# 4444110000100000000000000000114444444444444
-# 4444110000100000000000000000114444444444444
-# 4444110000000000000000B00000114444444444444
-# 4444110000000000000000000000114444444444444
-# 4444111111111111111111111111114444444444444
-# 4444444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
-# 4444444444444444444444444444444444444444444
 
 #referenced this free code camp website
 # https://www.freecodecamp.org/news/how-to-make-your-own-procedural-dungeon-map-generator-using-the-random-walk-algorithm-e0085c8aa9a/ 
@@ -72,19 +45,19 @@ def randomMapGen(allowDiagMoves = False):
     #random from 25 to 80
     rowDim, colDim = 25, 50
 
-    maxTunnels = 10
-    maxLength = 20
+    maxTunnels = 50
+    maxLength = 30
 
     genRectRoomChance = 7 #checked with a random from 0 to 10
 
     iterations = 0
-    maxIterations = 50
+    maxIterations = 2000
 
     map = create2dList(1, rowDim, colDim)
 
     #range of row/col selection is 3 to the end
-    currentRow = random.randint(3, rowDim-3)
-    currentCol = random.randint(3, colDim-3)
+    currentRow = random.randint(8, rowDim-8)
+    currentCol = random.randint(15, colDim-15)
 
     if(allowDiagMoves):
         movements = [(1,0), (0, 1), (-1, 0), (0, -1), (1, 1),
@@ -113,11 +86,10 @@ def randomMapGen(allowDiagMoves = False):
         tunnelLength = 0
 
         while(tunnelLength < randLength):
+            
             #make sure we're not going off bounds based on
             #our cur location and whichever random direction
             #we are going
-
-
             if((currentRow == 0 and randomDirection[0] == -1) or
                 (currentCol == 0 and randomDirection[1] == -1)  or
                 (currentRow == rowDim -1 and randomDirection[0] == 1) or
@@ -128,17 +100,12 @@ def randomMapGen(allowDiagMoves = False):
                 currentRow+=randomDirection[0]
                 currentCol+=randomDirection[1]
                 tunnelLength+=1
-                chance = random.randint(0, 10)
-                if(chance > genRectRoomChance):
-                    randomRectGen(map, currentRow, currentCol)
-        
         if(tunnelLength >= 1):
             lastDirection = randomDirection
             maxTunnels-=1
         iterations+=1
-        print(iterations)
     
-    print(map)
+
     return map
 
 
@@ -236,7 +203,7 @@ def testMapGen():
 
 
 
-testMapGen()
+# testMapGen()
 
 
 

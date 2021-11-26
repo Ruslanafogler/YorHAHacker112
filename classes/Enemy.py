@@ -17,9 +17,10 @@ class Enemy(Moveable):
         self.movementTimer = 0
         self.aimingTimer = 0
         self.shootingTimer = 0
-        self.aimCoolDown = 0.1
-        self.fireCoolDown = 9
-        self.movementCoolDown = 0.8
+       
+        self.aimCoolDown = 10
+        self.fireCoolDown = 30
+        self.movementCoolDown = 10
         self.health = 10
         self.maxHealth=10
 
