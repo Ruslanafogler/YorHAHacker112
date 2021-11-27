@@ -24,18 +24,23 @@ class Bullet:
   
     def damage(self, other):
         other.health-=self.bulletDamage
-        print(other, other.health)        
+        print(other, other.health)      
 
 
+    def isLegalIndex(map, row, col):
+        if(row < 0 or row >= len(map) or col < 0 or col >= len(map[0])):
+            return False
+        else:
+            return True
+
+
+    
     def linearTravel(self, map, minRowScreen, minColScreen, isPlayerBullet):
-        
-
         bulletScreenRow, bulletScreenCol = Bullet.findLocationOnScreenGrid(self)
-
-        actualGridRow, actualGridCol =bulletScreenRow+minRowScreen, bulletScreenCol+minColScreen
+        actualGridRow, actualGridCol = bulletScreenRow+minRowScreen, bulletScreenCol+minColScreen
+        if(not Bullet.isLegalIndex(map, actualGridRow, actualGridCol)):
+            return   
         mapVal = map[actualGridRow][actualGridCol]
-
-
         if( mapVal == 1 or mapVal == 4):
             #hit a wall or enemy
             return False
@@ -49,8 +54,8 @@ class Bullet:
             return 'player'
         else:
             # print(self, 'traveling')
-            self.x+=Bullet.calcLinearDx(self)
-            self.y+=Bullet.calcLinearDy(self)
+            self.x+=Bullet.calcLinearDx(self, self.angle+math.pi)
+            self.y+=Bullet.calcLinearDy(self, self.angle+math.pi)
             return 'success'
 
 
@@ -60,11 +65,11 @@ class Bullet:
         col = int(self.x // self.boxSize)
         return (row, col)
 
-    def calcLinearDx(self):
-        return self.speed*math.cos(self.angle+math.pi)
+    def calcLinearDx(self, angle):
+        return self.speed*math.cos(angle)
 
-    def calcLinearDy(self):
-        return self.speed*math.sin(self.angle+math.pi)
+    def calcLinearDy(self, angle):
+        return self.speed*math.sin(angle)
 
 
 

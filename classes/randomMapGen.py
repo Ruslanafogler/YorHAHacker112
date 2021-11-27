@@ -5,7 +5,12 @@ import numpy as np
 
 
 #referenced this free code camp website
+#uses random walk to make random tunnels
 # https://www.freecodecamp.org/news/how-to-make-your-own-procedural-dungeon-map-generator-using-the-random-walk-algorithm-e0085c8aa9a/ 
+
+##*****************
+#UNUSED. DON"T LOOKT AT THIS ONE. SEE RANDOMAPGEN2
+##*****************
 def printMap(map):
     
     for row in map:

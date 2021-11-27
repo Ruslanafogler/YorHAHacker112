@@ -5,15 +5,18 @@ import numpy as np
 from .Moveable import Moveable
 
 class Player(Moveable):
-    def __init__(self, gridX, gridY, boxSize):
+    def __init__(self, gridX, gridY, offsetX, offsetY, boxSize, health=50, maxHealth=50):
         super().__init__(gridX, gridY, boxSize)
+
         
-        self.x = gridX*boxSize + boxSize//2
-        self.y = gridY*boxSize+boxSize//2    
+        
+        self.x = (gridX - offsetX)*boxSize + boxSize//2
+        self.y = (gridY - offsetY)*boxSize+boxSize//2    
+        print('player class pos', gridX, gridY, self.x, self.y)
         self.angle = math.pi/2
         self.theta = math.pi/2
-        self.health = 50
-        self.maxHealth = 50
+        self.health = health
+        self.maxHealth = maxHealth
 
         
         self.width = 20

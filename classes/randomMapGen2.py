@@ -12,6 +12,7 @@
 #cellular automata tutorial:
 
 import random
+import copy
 
 
 
@@ -34,12 +35,26 @@ def printMap(map):
 
 
 
-def create2dList(defaultNum, rowDim, colDim):
+def create2dList(defaultNum, rowDim, colDim, cellularAuto=False):
     map =[]
+    initChance = 2
+    margin = 2
     for r in range(rowDim):
         newRow = []
         for c in range(colDim):
-            newRow.append(defaultNum)
+            if(cellularAuto == True and 
+            r >= margin 
+            and r <= rowDim-margin 
+            and c >= margin 
+            and c <= colDim-margin):
+                #either 1 or 0
+                num = random.randint(0, 10)
+                if(num <= initChance):
+                    newRow.append(1)
+                else:
+                    newRow.append(0)
+            else:
+                newRow.append(defaultNum)
         map.append(newRow)
     return map
 
@@ -47,8 +62,8 @@ def create2dList(defaultNum, rowDim, colDim):
 
 def initMap():
     map = []
-    rowDim = 80
-    colDim = 50
+    rowDim = 30
+    colDim = 45
     map = create2dList(4, rowDim, colDim)
     return map, rowDim, colDim
 
@@ -58,6 +73,8 @@ class Room:
     def __init__(self, row, col, width, height):
         self.minRow = row
         self.minCol = col
+        self.height = height
+        self.width = width
         self.maxRow = row + height
         self.maxCol = col + width
 
@@ -68,12 +85,21 @@ class Room:
 
 class RandomMapGenerator:
 
-    def __init__(self, mapMargin = 3):
+    def __init__(self, neededEnemyNum, mapMargin = 5):
+
         self.map, self.rowDim, self.colDim = initMap()
-        self.mapMargin = 3
+        self.mapMargin = mapMargin
         self.state = RandomMapGenerator.createStartingRoom(self)
-        self.deathLimit = 3
-        self.birthLimit = 3
+
+        self.rooms = []
+        self.totalRooms = random.randrange(3, 6)
+
+        self.birthLimit = 4
+        self.deathLimit = 6
+
+        self.enemyNum = 0
+        self.neededEnemyNum = neededEnemyNum
+
 
 
 
@@ -91,7 +117,7 @@ class RandomMapGenerator:
         self.startingRectHeight = random.randint(minSize, maxSize)
 
         rand = random.randint(0, 8)
-        print(rand)
+
         if(rand <= chance['topLeft']):
             self.state = 'topLeft'
         elif(rand <= chance['topRight']):
@@ -106,7 +132,7 @@ class RandomMapGenerator:
 
     def initStartingRoom(self):
         rectMargin = self.mapMargin
-        print(self.state)
+
         if(self.state == 'topLeft'):
             minRow = rectMargin
             minCol = rectMargin
@@ -124,11 +150,20 @@ class RandomMapGenerator:
             minCol = rectMargin
             return Room(minRow, minCol, self.startingRectWidth, self.startingRectHeight)
 
+    def placePlayer(self):
+        margin = self.mapMargin + 2
+        if(self.state == 'topLeft'):
+            self.map[margin][margin] = 'P'
+        elif(self.state == 'topRight'):
+            self.map[margin][self.colDim - margin] = 'P'
+        elif(self.state == 'bottomRight'):
+            self.map[self.rowDim - margin][self.colDim - margin] = 'P'
+        else:
+            self.map[self.rowDim - margin][margin] = 'P'
+
 
     def initRooms(self):
-        self.rooms=[]
         mapMargin = 3
-        totalRooms = random.randrange(3, 6)
         
         minSize = 5
         maxSize = 20
@@ -139,7 +174,7 @@ class RandomMapGenerator:
 
         self.rooms.append(RandomMapGenerator.createStartingRoom(self))
 
-        while(len(self.rooms) < totalRooms):
+        while(len(self.rooms) < self.totalRooms):
             if(iterations > maxIterations):
                 print('exceeded room count, gonna make rooms with what we got')
                 break
@@ -176,7 +211,14 @@ class RandomMapGenerator:
                     
             self.rooms.append(newRoom)
         
-        newMap = RandomMapGenerator.createRooms(self)
+        newMap = RandomMapGenerator.createRooms(self, 2)
+
+        
+        RandomMapGenerator.placeEnemy(self, self.map, self.rowDim, self.colDim, 
+                                    self.neededEnemyNum - self.enemyNum)
+
+
+
         return newMap
 
 
@@ -200,18 +242,21 @@ class RandomMapGenerator:
                 )
 
 
-    def createRooms(self):
-
-        # for i in range(steps):
-        #     RandomMapGenerator.doSimulationStep(self)
-
+    def createRooms(self, steps):
         for room in self.rooms:
-            # initMap()
+            roomMap = create2dList(0, room.height, room.width, True)
 
+            for i in range(steps):
+                roomMap = RandomMapGenerator.doSimulationStep(self, roomMap)
 
-            for r in range(room.minRow, room.maxRow):
-                for c in range(room.minCol, room.maxCol):
-                    self.map[r][c] = 0
+            roomMapR = -1
+            roomMapC = -1
+            for mapR in range(room.minRow, room.maxRow):
+                roomMapR+=1
+                for mapC in range(room.minCol, room.maxCol):
+                    roomMapC+=1
+                    self.map[mapR][mapC] = roomMap[roomMapR][roomMapC]
+                roomMapC = -1
 
     def hTunnel(self, row1, row2, col):
         minRow = min(row1, row2)
@@ -233,26 +278,44 @@ class RandomMapGenerator:
                 newCol < self.colDim and newCol >= 0)
 
     def doSimulationStep(self, roomMatrix):
-        oldMap = roomMatrix
-        for r in range(self.rowDim):
-            for c in range(self.colDim):
+        oldMap = copy.deepcopy(roomMatrix)
+        rowDim = len(oldMap)
+        colDim = len(oldMap[0])
+        spawnedEnemy = False
+        enemiesPerRoom = max(1, int(self.neededEnemyNum//self.totalRooms))
+
+        
+        def spawnEnemy(rand, spawnedEnemy):
+            if rand <= enemyChance and spawnedEnemy == False:
+                RandomMapGenerator.placeEnemy(self, roomMatrix, rowDim, colDim, 
+                                            enemiesPerRoom)
+                return True
+        
+        for r in range(3, rowDim-3):
+            for c in range(3, colDim-3):
                 n = RandomMapGenerator.livingNeighbors(self, r, c)
+                enemyChance = 3
+                rand = random.randint(0, 10)
+
+
                 
 
-                if(oldMap[r][c] != 1):
-                    #it's alive(equal to 1 or 4, which is obstacle)
-                    #if it's got 3 neighbors, kill it
+                if(oldMap[r][c] == 1):
+                    #this means its alive
                     if(n < self.deathLimit):
                         roomMatrix[r][c] = 1
                     else:
                         roomMatrix[r][c] = 0
+                        spawnedEnemy = spawnEnemy(rand, spawnedEnemy)
                 else:
-                    #it's dead(equal to 0 and walkable space)
-                    #if its got 1 or 2 neighbors, regen it  
+                    #this means is dead
                     if(n > self.birthLimit):
                         roomMatrix[r][c] = 0
+                        spawnedEnemy = spawnEnemy(rand, spawnedEnemy)
                     else:
                         roomMatrix[r][c] = 1
+                
+        return roomMatrix
                         
 
 
@@ -267,33 +330,52 @@ class RandomMapGenerator:
             #if its not on the map, its alive Ig(tho this condition shouldn't be checked?)
             if(not RandomMapGenerator.isOnMap(self, drow, dcol)):
                 count+=1
-            #if the value exists and is 0, its alive
-            elif(self.map[drow][dcol] == 4):
+            #if the value exists and is not 0, its alive
+            elif(self.map[drow][dcol] != 0):
                 count+=1
         return count
 
+    def getEnemy():
+        rand = random.randint(0, 1)
+        if(rand == 1):
+            return 'A'
+        else:
+            return 'B'
+
+    def placeEnemy(self, map, rowDim, colDim, enemiesToAdd):
+        limit = 5
+        addedEnemies = 0
+        for r in range(rowDim):
+            for c in range(colDim):
+                if(map[r][c] == 0):
+                    n = RandomMapGenerator.livingNeighbors(self, r, c)
+                    if(n > limit and addedEnemies < enemiesToAdd and self.enemyNum < self.neededEnemyNum):
+                        map[r][c] = RandomMapGenerator.getEnemy()
+                        self.enemyNum+=1
+                        addedEnemies+=1
+
+        
 
 
-    def generateRandomMap(self, steps):
+
+    def generateRandomMap(self):
         RandomMapGenerator.initRooms(self)
-        RandomMapGenerator.createRooms(self)
-
-
-
-
-
         
 
 
 
-        
+def getRandomMap(neededEnemyNum):
+    dungeon = RandomMapGenerator(neededEnemyNum)
+    dungeon.generateRandomMap()
+    dungeon.placePlayer()
+    print(dungeon.state)
+    return dungeon.map, dungeon.state
 
 
 
-def testMapGen():
-    dungeon = RandomMapGenerator()
-    dungeon.generateRandomMap(2)
-    printMap(dungeon.map)
+# def testMapGen():
+#     map = getRandomMap(4)
+#     printMap(map)
     
-testMapGen()
+# testMapGen()
 

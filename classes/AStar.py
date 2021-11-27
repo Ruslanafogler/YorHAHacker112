@@ -121,7 +121,7 @@ def aStar(map, start, end, allowDiagMoves = False):
 
     #stop condition so it won't be doing this forever
     iterations = 0
-    maxIterations = 3000
+    maxIterations = 1500
 
     if(allowDiagMoves):
         movements = [(1,0), (0, 1), (-1, 0), (0, -1), (1, 1),

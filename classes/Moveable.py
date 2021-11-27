@@ -27,7 +27,7 @@ class Moveable():
     #learned about static methods from Kosbie's OH and 112 website:
     #https://www.cs.cmu.edu/~112/notes/notes-oop-part3.html 
     @staticmethod
-    def getAngle(self, targetX, targetY):
+    def getAngle(self, targetX, targetY, offset=0):
         ydifference = targetY-self.y
         xdifference = targetX-self.x
 
@@ -42,7 +42,7 @@ class Moveable():
             newAngle = newAngle+math.pi
         
         self.angle = newAngle + math.pi
-        return newAngle
+        return newAngle+offset
 
     @staticmethod
     def do2dRotation(ox, oy, x,y, angle):

@@ -7,11 +7,11 @@ from .Player import Player
 from .Enemy import Enemy
 from .convertToGrid import convertToGrid
 from .AStar import isLegalMove
-from .randomMapGen import createRandomMap
+from .randomMapGen2 import getRandomMap, printMap
 
 
 def createMap(boxSize):
-    unparsedMap = createRandomMap()
+    unparsedMap, state = getRandomMap(4)
     map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
 
     enemyList = []
@@ -23,14 +23,20 @@ def createMap(boxSize):
             if(elem == 'P'):
                 playerPosition = (col, row)
             elif(elem == 'A' or elem == 'B'):
-                    enemyList.append(Enemy(elem, playerPosition, col, row, boxSize))
+                    enemyList.append(Enemy(elem, col, row, boxSize))
             
            
             if(isinstance(elem, str)):
                 map[row].append((elem))
             else: 
                 map[row].append(int(elem))
-    return map, playerPosition, enemyList
+
+    print("FROM FORMULA")    
+    printMap(map)
+
+
+    return map, state, playerPosition, enemyList
+
 
 
 
@@ -50,7 +56,7 @@ def createMapFromFile(boxSize):
             if(elem == 'P'):
                 playerPosition = (col, row)
             elif(elem == 'A' or elem == 'B'):
-                    enemyList.append(Enemy(elem, playerPosition, col, row, boxSize))
+                    enemyList.append(Enemy(elem, col, row, boxSize))
             
            
             if(elem.isalpha()):
@@ -62,7 +68,8 @@ def createMapFromFile(boxSize):
     #             for col in row] 
     # #             for row in unparsedMap]
     f.close()
-    # print(map)
+    print("FROM FILE")
+    printMap(map)
     return map, playerPosition, enemyList
 
 
@@ -71,8 +78,8 @@ def createMapFromFile(boxSize):
 #ref website is numpy doc on shape and this:
 #https://numpy.org/doc/stable/reference/generated/numpy.shape.html
 #https://thispointer.com/how-to-get-numpy-array-dimensions-using-numpy-ndarray-shape-numpy-ndarray-size-in-python/
-def getRowAndColLength(daList):
-    newList = np.array(daList, dtype=object) 
+def getRowAndColLength(map):
+    newList = np.array(map, dtype=object) 
     return newList.shape
 
 
@@ -81,12 +88,13 @@ def getRowAndColLength(daList):
 
 
 class Map:
-    def __init__(self, width, height, gridSize, boxSize):
+    def __init__(self, width, height, gridSize, boxSize, playerHealth, playerMaxHealth):
         self.margin = 100
         self.width = width
         self.height = height
         #createMapFromFile was used to create map previously
-        self.map, self.playerPosition, self.enemyList = createMapFromFile(boxSize)
+        # self.map, self.playerPosition, self.enemyList = createMap(boxSize)
+        self.map, self.state, self.playerPosition, self.enemyList = createMap(boxSize)
 
         print(getRowAndColLength(self.map))
         self.rowLength, self.colLength = getRowAndColLength(self.map)
@@ -95,25 +103,40 @@ class Map:
         for enemy in self.enemyList:
             enemy.initMovements(self.map, self.playerPosition)
 
-
-        # print("NEW MAP")
-        # print(convertToGrid(self.map))
-
-        self.player = Player(self.playerPosition[0], self.playerPosition[1], boxSize)
-
-
         
         self.gridSize = gridSize
         self.boxSize = boxSize
         self.offsetX = 0
         self.offsetY = 0
+        Map.decideOffset(self)
 
+        self.player = Player(self.playerPosition[0], self.playerPosition[1], 
+                            self.offsetX, self.offsetY, boxSize, playerHealth, playerMaxHealth)
 
-        self.maxRowIndex = self.width//boxSize+self.offsetY
-        self.maxColIndex = self.height//boxSize+self.offsetX
+        self.maxRowIndex = self.height//boxSize+self.offsetY
+        self.maxColIndex = self.width//boxSize+self.offsetX
         self.boxesDim = self.width//boxSize
 
+        print('maprange columns', self.offsetX, self.maxColIndex)
+        print('maprange rows', self.offsetY, self.maxRowIndex)
+
         
+
+    def decideOffset(self):
+
+        if(self.state == 'topLeft'):
+            self.offsetX = 0
+            self.offsetY = 0
+        elif(self.state == 'topRight'):
+            self.offsetX = self.colLength - 20
+            self.offsetY = 0
+        elif(self.state == 'bottomRight'):
+            self.offsetX = self.colLength - 20
+            self.offsetY = self.rowLength - 20
+        else:
+            self.offsetX = 0
+            self.offsetY = self.rowLength - 20
+
 
 
     def enemyAutoTravel(self, enemy):
@@ -129,13 +152,12 @@ class Map:
         newGridX = enemy.gridX + colInc
         newGridY = enemy.gridY + rowInc
         
-        #print(enemy)
+
         if(isLegalMove(self.map, newGridY, newGridX)):
             self.map[enemy.gridY][enemy.gridX] = 0
             self.map[newGridY][newGridX] = enemy.type
             enemy.move(colInc, rowInc)
-            #print(enemy)
-            #printMap(self)
+
         # else:
             #print('illegal move enemy')
 
@@ -179,32 +201,30 @@ class Map:
     
     def changeViewOffset(self, dx, dy):
         # print("BTW, max row and col lengths", self.rowLength, self.colLength)
-
+        print(dx, dy)
         if(self.offsetX + dx >= 0 and 
            self.offsetY + dy >= 0 and
-           self.maxRowIndex + dy < self.rowLength and
-           self.maxColIndex + dx < self.colLength ):
+           self.maxRowIndex + dy <= self.rowLength and
+           self.maxColIndex + dx <= self.colLength ):
            
            self.offsetX+=dx
            self.offsetY+=dy
            self.maxRowIndex+=dy
            self.maxColIndex+=dx
 
-           
+        #    print("VIEW CHANED")
         #    print('X: drawing cols from', self.offsetX, self.maxColIndex)
-        #    print('Y: drawing rows from', self.offsetY, self.maxRowIndex)
+        #    print('Y: drawing rows frwom', self.offsetY, self.maxRowIndex)
 
            return True
         else:
             # print('X: drawing cols from', self.offsetX, self.maxColIndex)
-            # print('Y: drawing rows from', self.offsetY, self.maxRowIndex)
+            # print('Y: drawing rdows from', self.offsetY, self.maxRowIndex)
             return False
        
 
 
         # self.map = Map.setMap(self)
-
-
 
 
     def findEnemy(self, r, c):
@@ -276,6 +296,9 @@ class Map:
         )
 
 
+
+    #health container logic inspired from tech from tim's pygame tutorial
+    #https://www.youtube.com/watch?v=jO6qQDNa2UY
     def drawPlayerHealth(self, canvas):
         healthDisplayLength = self.boxSize*10
         healthDisplayWidth = self.boxSize
@@ -314,21 +337,17 @@ class Map:
                                 fill=textColor,  font='Helvetica 14 bold')
             canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
 
+
+
     
-
-
-
-
-    #ther's a big issue with this one chief
     def drawEnemyHealth(self, enemy, canvas):
+        healthRectLen = self.boxSize*1
+        healthRectWidth = 50
 
-        healthRectLen = self.boxSize*20
-        healthRectWidth = 20
+        healthBarX0 = enemy.x+25
+        healthBarY0 = enemy.y-25
 
-        healthBarX0 = enemy.x+20
-        healthBarY0 = enemy.y+20
-
-        healthBarX1 = healthBarX0+healthRectLen
+        healthBarX1 = healthBarX0 + healthRectLen
         healthBarY1 = healthBarY0 + healthRectWidth
         
         
@@ -345,28 +364,10 @@ class Map:
                 color = Map.colors['green']
             else: 
                 color = Map.colors['red']
-            canvas.create_rectangle(healthBarX0, healthBarY0, float(healthBarX1*fractionOfHealth), healthBarY1, fill=color, width=0)
-
-
-
-
-
-def printMap(self):
-    
-    for row in self.map:
-        line = []
-        for col in row:
-            if col == 'P':
-                line.append("P")
-            elif col == 'B' or col == 'A':
-                line.append("E")
-            elif col == 1:
-                line.append("\u2588")
-            elif col == 0:
-                line.append(" ")
-            elif col == 2:
-                line.append(".")
-        print("".join(line))        
+            canvas.create_rectangle(healthBarX0, healthBarY0, 
+                                healthBarX0+fractionOfHealth*healthRectLen, healthBarY1, 
+                                fill=color, width=0)
+     
 
 
 

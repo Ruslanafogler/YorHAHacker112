@@ -8,7 +8,7 @@ from .AStar import aStar
 #INCLUDES BOTH TYPE A AND B
 
 class Enemy(Moveable):
-     def __init__(self, type, playerPosition, gridX, gridY, boxSize):
+     def __init__(self, type, gridX, gridY, boxSize):
         super().__init__(gridX, gridY, boxSize)
         self.type = type
         self.x = self.gridX*self.boxSize + self.boxSize//2
@@ -65,13 +65,19 @@ class Enemy(Moveable):
      def removeBullet(self, bullet):
          self.bullets.remove(bullet)
 
+     def getAngle(self, playerX, playerY):
+         if(self.type == 'A'):
+            Moveable.getAngle(self, playerX, playerY)
+         else:
+            Moveable.getAngle(self, playerX, playerY, math.pi/6)
+
 
      def redrawAll(self, canvas, playerX, playerY):
-         Moveable.getAngle(self, playerX, playerY)
-
+         Enemy.getAngle(self, playerX, playerY)
          if(self.type == 'A'):
             Enemy.drawEnemyA(self, canvas)
          elif(self.type == 'B'):
+
             Enemy.drawEnemyB(self, canvas)
 
 
