@@ -3,6 +3,7 @@ from cmu_112_graphics import *
 import math
 import numpy as np
 from .Moveable import Moveable
+from .config import COLORS
 
 class Player(Moveable):
     def __init__(self, gridX, gridY, offsetX, offsetY, boxSize, health=50, maxHealth=50):
@@ -17,12 +18,42 @@ class Player(Moveable):
         self.theta = math.pi/2
         self.health = health
         self.maxHealth = maxHealth
+        self.color = 'white'
+
+        self.dashingColor = COLORS['red']
+        self.isDashing = False
+
+        self.dashingTimer = 0
+        self.dashingCoolDown = 25
 
         
         self.width = 20
         self.expWidth = 50
         self.centerDownLength = 20
         self.centerUpLength = 40
+
+        self.dashingTriangleHeight = 60
+        self.dashingTriangleWidth = 50
+    
+    def drawDashingAnimation(self, canvas, mouseX, mouseY):
+        x0 = self.x - self.dashingTriangleWidth
+        y0 = self.y + self.dashingTriangleHeight
+        
+        x1 = self.x
+        y1 = self.y - self.dashingTriangleWidth
+        
+        x2 = self.x + self.dashingTriangleWidth
+        y2 = self.y + self.dashingTriangleHeight
+
+        x0,y0 = Moveable.do2dRotation(self.x, self.y, x0, y0, self.angle-self.theta)
+        x1,y1 = Moveable.do2dRotation(self.x, self.y, x1, y1, self.angle-self.theta)
+        x2,y2 = Moveable.do2dRotation(self.x, self.y, x2, y2, self.angle-self.theta)
+        canvas.create_polygon(x0, y0,
+                                x1, y1,
+                                x2, y2,
+                                fill=self.dashingColor)
+
+
 
 
     def redrawAll(self, canvas, mouseX, mouseY):
@@ -42,8 +73,13 @@ class Player(Moveable):
         x1,y1 = Moveable.do2dRotation(self.x, self.y, x1, y1, self.angle-self.theta)
         x2,y2 = Moveable.do2dRotation(self.x, self.y, x2, y2, self.angle-self.theta)
         x3,y3 = Moveable.do2dRotation(self.x, self.y, x3, y3, self.angle-self.theta)
+      
+        if(self.isDashing):
+            Player.drawDashingAnimation(self, canvas, mouseX, mouseY)
+        
         canvas.create_polygon(x0, y0,
                                 x1, y1,
                                 x2, y2,
                                 x3, y3, 
-                                fill='white')
+                                fill=self.color)
+

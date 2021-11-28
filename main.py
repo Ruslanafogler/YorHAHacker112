@@ -28,15 +28,15 @@ def appStarted(app):
 
 
 
-
-
 def initApp(app, fromRestart):
     app.playerBullets = []
+    app.playerDirection = (1, 0)
     if(fromRestart):
+        app.level = 1
+        app.chambers = 0
+        app.playerPowerUps = []
         app.playerHealth = 50
         app.maxPlayerHealth = 50
-    
-    
     
     app.map = Map(app.width, app.height, app.gridSize, 
                   app.boxSize, app.playerHealth, app.maxPlayerHealth)
@@ -53,42 +53,54 @@ def initApp(app, fromRestart):
 
 
 
-#grids on map inspired by KidsCanCode TilebasedGame pt1
-#https://www.youtube.com/watch?v=3UxnelT9aCo&list=PLsk-HSGFjnaGQq7ybM8Lgkh5EMxUWPm2i&index=1
-def drawBigGrid(app, canvas):
-    for x in range(0, app.height, app.boxSize):
-        canvas.create_line(x, 0, x, app.height, fill='#ffffff')
-
-    for y in range(0, app.height, app.boxSize):
-        canvas.create_line(0, y, app.width, y, fill='#ffffff')
-
-
+#######################################
+#DRAWING STUFF
 def redrawAll(app, canvas):
-
     if(app.drawPowerUpScreen):
-        canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
-        canvas.create_text(app.width//2, app.height//2, text=f'Power Up', fill='white')
+        drawPowerUpScreen(app, canvas)
     elif(app.gameOver):
-        canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
-        canvas.create_text(app.width//2, app.height//2, text=f'Game Over', fill='white')
+        drawGameOverScreen(app, canvas)
     elif(app.generatingMap):
-        canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
-        canvas.create_text(app.width//2, app.height//2, text=f'Generating Map..', fill='white')
-    
-
+        drawGenMapScreen(app, canvas)
     elif(not app.generatingMap):
-        drawMap(app, canvas)
-        drawPlayerBullets(app, canvas)
-        drawEnemyBullets(app, canvas)
-        drawBigGrid(app, canvas)
-        drawPlayerHealth(app, canvas)
-
-        
-        if(app.completedMap):
-            drawHackingCompleteText(app, canvas)
+        drawGameplayScreen(app, canvas)
 
 
 
+#draw generate map loading screen
+def drawGenMapScreen(app, canvas):
+    canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
+    canvas.create_text(app.width//2, app.height//2, text=f'Generating Map..', fill='white')
+
+#draw game over screen
+def drawGameOverScreen(app, canvas):
+    canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
+    canvas.create_text(app.width//2, app.height//2, text=f'Game Over', fill='white')
+
+
+#draw choose power up screen
+def drawPowerUpScreen(app, canvas):
+    headerFontX0, headerFontY0 = app.width//2, 60
+    headerFontSize = 50
+    canvas.create_rectangle(0,0, app.width, app.height, fill='gray',)
+    canvas.create_text(headerFontX0, headerFontY0, text=f'Power Up', font=f'Myriad {headerFontSize} bold', fill='white')
+
+    rectMargin = 20
+    rectWidth = app.width - rectMargin*2
+    rectHeight = (app.height - rectMargin*2 - headerFontSize - headerFontY0)//3 - rectMargin
+    
+    for powerUpRect in range(3):
+        rectX0 = rectMargin
+        rectY0 = headerFontY0 + headerFontSize + rectMargin + (rectHeight + rectMargin) * powerUpRect
+        rectX1 = rectX0 + rectWidth
+        rectY1 = rectY0 + rectHeight
+        canvas.create_rectangle(rectX0, rectY0, 
+                                rectX1, rectY1, 
+                                fill='blue', width = 2)
+
+#draw gameplay screen
+
+#gameplay screen
 def drawMap(app, canvas):
     app.map.redrawAll(canvas, app.mouseX, app.mouseY)
 
@@ -104,8 +116,56 @@ def drawEnemyBullets(app, canvas):
 def drawPlayerHealth(app, canvas):
     app.map.drawPlayerHealth(canvas)
 
+def drawHackingCompleteText(app, canvas):
+    canvas.create_text(app.height//2, app.width//2, text='- Hacking Complete -', font='Myriad 50 bold', fill='white')
+    canvas.create_text(app.height//2, app.width//2+50, text='- Onto next level -', font='Myriad 15 bold', fill='white')
+
+def drawPlayerProgress(app, canvas):
+    margin = 30
+    fontSize = 15
+
+    levelTextLen = 40
+    levelText = f'Level {app.level}' 
+    levelFont = f'Myriad {fontSize+10}'
+    
+    levelTextX0 = app.width - margin - levelTextLen
+    levelTextY0 = margin
+
+    chamberFont = f'Myriad {fontSize}'
+    chamberText = f'Chamber {app.chambers}' 
+    
+    chamberTextX0 = levelTextX0
+    chamberTextX1 = levelTextY0 + margin
+    
+
+    canvas.create_text(levelTextX0, levelTextY0, text=levelText, font=levelFont, fill='white')
+    canvas.create_text(chamberTextX0, chamberTextX1, text=chamberText, font=chamberFont,fill='white')
 
 
+def drawGameplayScreen(app, canvas):
+        drawMap(app, canvas)
+        drawPlayerBullets(app, canvas)
+        drawEnemyBullets(app, canvas)
+        drawBigGrid(app, canvas)
+        drawPlayerHealth(app, canvas)
+        drawPlayerProgress(app, canvas)
+        if(app.completedMap):
+            drawHackingCompleteText(app, canvas)
+
+
+#draw big grid method
+#grids on map inspired by KidsCanCode TilebasedGame pt1
+#https://www.youtube.com/watch?v=3UxnelT9aCo&list=PLsk-HSGFjnaGQq7ybM8Lgkh5EMxUWPm2i&index=1
+def drawBigGrid(app, canvas):
+    for x in range(0, app.height, app.boxSize):
+        canvas.create_line(x, 0, x, app.height, fill='#ffffff')
+
+    for y in range(0, app.height, app.boxSize):
+        canvas.create_line(0, y, app.width, y, fill='#ffffff')
+
+
+########################################
+#OTHER METHODS TO HELP WITH STUFF
 
 def playerFireBullet(app):
     app.playerBullets.append(PlayerBullet(app.map.player.x, app.map.player.y, 
@@ -124,31 +184,19 @@ def addBulletOffset(app, dcol, drow, bulletList):
         bullet.y-=drow*app.boxSize
 
 
-def keyPressed(app, event):
-    playerMovement = 1
-    if(event.key == 'a'):
-        movePlayer(app, -playerMovement, 0)
-    if(event.key == 'd' ):
-        movePlayer(app, playerMovement, 0)
-    if(event.key == 'w'):
-        movePlayer(app, 0, -playerMovement)
-    if(event.key == 's'):
-        movePlayer(app, 0, playerMovement)
-    if(event.key == 'Space'):
-        playerFireBullet(app)
-
-
-def mouseMoved(app, event):
-    app.mouseX = event.x
-    app.mouseY = event.y
-
 def advanceToNextRoom(app):
     app.generatingMap = True
     app.playerHealth = app.map.player.health
     app.maxPlayerHealth = app.map.player.maxHealth
+    app.chambers+=1
     initApp(app, False)
 
 
+#########################################
+#EVENTS LIKE KEY PRESSING,
+def mouseMoved(app, event):
+    app.mouseX = event.x
+    app.mouseY = event.y
 
 def mousePressed(app, event):
     if(app.drawPowerUpScreen):
@@ -159,6 +207,68 @@ def mousePressed(app, event):
             advanceToNextRoom(app)
     else:
         playerFireBullet(app)
+
+def keyPressed(app, event):
+    playerMovement = 1
+    if(event.key == 'a'):
+        movePlayer(app, -playerMovement, 0)
+        app.playerDirection = (-playerMovement, 0)
+    if(event.key == 'd' ):
+        movePlayer(app, playerMovement, 0)
+        app.playerDirection = (playerMovement, 0)
+    if(event.key == 'w'):
+        movePlayer(app, 0, -playerMovement)
+        app.playerDirection = (0, -playerMovement)
+    if(event.key == 's'):
+        movePlayer(app, 0, playerMovement)
+        app.playerDirection = (0, playerMovement)
+    if(event.key == 'Space'):
+        app.map.player.isDashing = True
+        if(not movePlayer(app, app.playerDirection[0]*3, app.playerDirection[1]*3)):
+            movePlayer(app, app.playerDirection[0]*2, app.playerDirection[1]*2)
+        
+        #create a small dashing animation and paramat awer player.isDashing
+        #dashing cooldown
+
+##################################################
+#TIMER FIRED STUFF
+def timerFired(app):
+    gameOverController(app)
+    screenController(app)
+    playerController(app)
+    bulletController(app, app.playerBullets, True)
+    enemyController(app)
+
+
+
+################################################
+#CONTROLLERS -- Stuff called under timer fired
+def gameOverController(app):
+    if(app.map.player.health <= 0):
+        app.gameOver = True
+        app.map.enemyList = []
+
+def screenController(app):
+    if(app.map and not app.generatingMap and not app.gameOver and not app.drawPowerUpScreen and len(app.map.enemyList) == 0):
+        app.completedMap = True
+        app.displayTimerScreen-=1
+    
+    if(app.gameOver):
+        app.displayTimerScreen-=1
+    if(app.gameOver and app.displayTimerScreen < 0):
+        app.generatingMap = True
+        initApp(app, True)
+        
+    if(app.completedMap and app.displayTimerScreen < 0):
+        app.drawPowerUpScreen = True      
+        #clicking a power up turns     
+
+
+def playerController(app):
+    if(app.map.player.isDashing):
+        app.map.player.dashingTimer+=1
+    if(app.map.player.isDashing and app.map.player.dashingTimer > 8):
+        app.map.player.isDashing = False          
 
 def bulletController(app, bulletList, isPlayerBullet):
     for bullet in bulletList:
@@ -181,40 +291,17 @@ def bulletController(app, bulletList, isPlayerBullet):
             if(bullet in bulletList):
                 bulletList.remove(bullet)    
 
-def drawHackingCompleteText(app, canvas):
-    canvas.create_text(app.height//2, app.width//2, text='- Hacking Complete -', font='Myriad 50 bold', fill='white')
-    canvas.create_text(app.height//2, app.width//2+50, text='- Onto next level -', font='Myriad 15 bold', fill='white')
 
-
-
-def timerFired(app):
-    if(app.map.player.health <= 0):
-        app.gameOver = True
-        app.map.enemyList = []
-
-
-    if(app.map and not app.generatingMap and not app.gameOver and not app.drawPowerUpScreen and len(app.map.enemyList) == 0):
-        app.completedMap = True
-        app.displayTimerScreen-=1
-    
-    if(app.gameOver):
-        app.displayTimerScreen-=1
-    if(app.gameOver and app.displayTimerScreen < 0):
-        app.generatingMap = True
-        initApp(app, True)
-        
-    if(app.completedMap and app.displayTimerScreen < 0):
-        app.drawPowerUpScreen = True      
-        #clicking a power up turns 
-
-
-    
-    bulletController(app, app.playerBullets, True)
-    
+def enemyController(app):
     for enemy in app.map.enemyList:
         if(enemy.health <= 0):
             app.map.enemyList.remove(enemy)
             app.map.map[enemy.gridY][enemy.gridX] = 0
+
+        
+        if(not app.map.player.isDashing):
+            enemy.dealCollisionDmg(app.map.player)
+        app.map.player.dealCollisionDmg(enemy)
 
         enemy.incTimers()
         #enemy fires at the player:
@@ -240,10 +327,12 @@ def timerFired(app):
         if(enemy.movements):
             if(enemy.movementTimer > enemy.movementCoolDown):
                 app.map.enemyAutoTravel(enemy)
-                enemy.movementTimer = 0
+                enemy.movementTimer = 0    
+
         
-    
-        
+####################################
+
+
 def runDaApp():
     runApp(width=900, height=900)
 

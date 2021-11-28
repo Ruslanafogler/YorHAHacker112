@@ -11,6 +11,8 @@ class Moveable():
 
         self.boxSize = boxSize 
         self.health = health
+        self.collisionDamage = 1
+        self.collided = False
 
 
     def move(self, x, y):
@@ -51,3 +53,16 @@ class Moveable():
         newX = ox + rotationMatrix[0][0]*(x - ox) + rotationMatrix[0][1]*(y - oy)
         newY = oy +  rotationMatrix[1][0]*(x - ox) +  rotationMatrix[1][1]*(y - oy)
         return newX,newY  
+
+    def dealCollisionDmg(self, other):
+        if(self.gridX == other.gridX and self.gridY == other.gridY and not self.collided
+        and not other.collided):
+            other.health-=self.collisionDamage
+            self.collided = True
+            other.collided = True
+        else:
+            self.collided = False
+            other.collided = False
+
+
+

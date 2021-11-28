@@ -7,7 +7,8 @@ from .Player import Player
 from .Enemy import Enemy
 from .convertToGrid import convertToGrid
 from .AStar import isLegalMove
-from .randomMapGen2 import getRandomMap, printMap
+from .RandomMapGen2 import getRandomMap, printMap
+from .config import COLORS
 
 
 def createMap(boxSize):
@@ -117,6 +118,8 @@ class Map:
         self.maxColIndex = self.width//boxSize+self.offsetX
         self.boxesDim = self.width//boxSize
 
+        self.colors = COLORS['LEVEL3']
+
         print('maprange columns', self.offsetX, self.maxColIndex)
         print('maprange rows', self.offsetY, self.maxRowIndex)
 
@@ -196,6 +199,8 @@ class Map:
                 for enemy in self.enemyList:
                     playerPosition = (self.player.gridY, self.player.gridX)
                     enemy.initMovements(self.map, playerPosition)
+        else:
+            return False
                     
 
     
@@ -261,14 +266,6 @@ class Map:
                 
 
 
-    colors = {
-        'offMap': '#817b69',
-        'onMap': '#beb99c',
-        'obstacle': '#dad3c5',
-        'green': '#98fb98',
-        'red': '#ff6961',
-    }
-
     def drawEnemy(self, canvas, enemy, r, c):
         rowCoord = r*self.boxSize+self.boxSize//2
         colCoord = c*self.boxSize+self.boxSize//2
@@ -291,7 +288,7 @@ class Map:
         canvas.create_rectangle(
         colCoord, rowCoord,
         colCoord + self.boxSize, rowCoord + self.boxSize,
-        fill=Map.colors[type],
+        fill=self.colors[type],
         width = width
         )
 
@@ -321,17 +318,17 @@ class Map:
         #max health container
         canvas.create_rectangle(textMargin+healthBarX0, healthBarY0, 
                                 healthBarX1, healthBarY1, 
-                                fill=Map.colors['obstacle'], width=0)
+                                fill=self.colors['obstacle'], width=0)
         #actual health container
         if(self.player.health >= 0):
             #0.18 bc anything lower and the health bar starts going backwards when its too low
             fractionOfHealth = max(0.18, abs(self.player.health/self.player.maxHealth))
             if(fractionOfHealth > 0.3):
                 textColor = 'black'
-                color = Map.colors['green']
+                color = COLORS['green']
             else: 
-                textColor=Map.colors['red']
-                color = Map.colors['red']
+                textColor=COLORS['red']
+                color = COLORS['red']
             canvas.create_text(healthBarX1+1.5*textMargin, self.boxSize//2, 
                                 text=f"{self.player.health}/{self.player.maxHealth}",
                                 fill=textColor,  font='Helvetica 14 bold')
@@ -361,9 +358,9 @@ class Map:
             #0.18 bc anything lower and the health bar starts going backwards when its too low
             fractionOfHealth = max(0.2, abs(enemy.health/enemy.maxHealth))
             if(fractionOfHealth > 0.3):
-                color = Map.colors['green']
+                color = COLORS['green']
             else: 
-                color = Map.colors['red']
+                color = COLORS['red']
             canvas.create_rectangle(healthBarX0, healthBarY0, 
                                 healthBarX0+fractionOfHealth*healthRectLen, healthBarY1, 
                                 fill=color, width=0)
