@@ -43,6 +43,7 @@ def initApp(app, fromRestart):
         app.maxPlayerHealth = 50
 
 
+
     app.map = Map(app.width, app.height, app.gridSize, app.boxSize, 
                   app.playerHealth, app.maxPlayerHealth, app.playerPowerUps, 
                   app.chambers)
@@ -144,14 +145,16 @@ def drawPowerUpScreen(app, canvas):
         parameter = ability[2]
         if(parameter != None):
            
-            percent = int(parameter/app.map.player.getPowerUpAttr(ability[0])*100)
+            currentPlayerNumber = app.map.player.getPowerUpAttr(ability[0])
+            if(currentPlayerNumber != 0):
+                percent = int(parameter/currentPlayerNumber)*100
 
-            if(percent > 0):
-                parameterText = f'+ {abs(percent)}%'
-            elif(percent < 0):
-                parameterText = f'- {abs(percent)}%'
-            else:
-                parameterText = 'Already maxed out.'
+                if(percent > 0):
+                    parameterText = f'+ {abs(percent)}%'
+                elif(percent < 0):
+                    parameterText = f'- {abs(percent)}%'
+                else:
+                    parameterText = 'Already maxed out.'
 
 
         
@@ -239,10 +242,12 @@ def playerFireBullet(app):
                                           app.boxSize, app.map.player.angle, app.map.player.bulletDamage))
 
 def movePlayer(app, dcol, drow):
-    app.map.movePlayer(dcol, drow)
+    if(app.map.movePlayer(dcol, drow) == False):
+        return False
     addBulletOffset(app, dcol, drow, app.playerBullets)
     for enemy in app.map.enemyList:
         addBulletOffset(app, dcol, drow, enemy.bullets)
+    return True
 
 
 def addBulletOffset(app, dcol, drow, bulletList):
@@ -326,7 +331,7 @@ def keyPressed(app, event):
         if(app.map.player.canDash):
             app.map.player.isDashing = True
             for dashRange in range(app.map.player.dashRange, 0, -1):
-                if(movePlayer(app, app.playerDirection[0]*dashRange, app.playerDirection[1]*dashRange) != False):
+                if(movePlayer(app, app.playerDirection[0]*dashRange, app.playerDirection[1]*dashRange)):
                     break
                     
         

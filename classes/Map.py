@@ -5,7 +5,7 @@ import numpy as np
 
 from .Player import Player
 from .Enemy import Enemy
-from .convertToGrid import convertToGrid
+
 from .AStar import isLegalMove
 from .RandomMapGen2 import getRandomMap, printMap
 from .config import COLORS, LEVEL_BY_CHAMBER_COUNT
@@ -131,11 +131,11 @@ class Map:
         self.boxesDim = self.width//boxSize
 
         def determineDiff(difficulty):
-            if(difficulty > LEVEL_BY_CHAMBER_COUNT[3]):
+            if(difficulty >= LEVEL_BY_CHAMBER_COUNT[3]):
                 return 3
-            elif(difficulty > LEVEL_BY_CHAMBER_COUNT[2]):
+            elif(difficulty >= LEVEL_BY_CHAMBER_COUNT[2]):
                 return 2
-            elif(difficulty >= LEVEL_BY_CHAMBER_COUNT[1]):
+            else:
                 return 1
 
 

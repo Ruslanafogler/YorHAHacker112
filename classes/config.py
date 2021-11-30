@@ -12,12 +12,14 @@ COLORS = {
         'offMap': '#817b69',
         'onMap': '#329599',
         'obstacle': '#80d1e4',
+        'shadow': '#2490A8'
     },
 
     'LEVEL3':{
         'offMap': '#817b69',
         'onMap': '#c57862',
         'obstacle': '#f79b80',
+        'shadow': '#C0360C'
     },
 
     'lightpurple': '#C6B2E6',
@@ -44,9 +46,9 @@ COLORS = {
 }
 
 LEVEL_BY_CHAMBER_COUNT = {
-    1: 0, # 5 chambers
-    2: 1, # 7 chambers
-    3: 2 # 9 chambers
+    1: 5, # 5 chambers
+    2: 7, # 7 chambers
+    3: 9 # 9 chambers
     #21 total chambers
 }
 
