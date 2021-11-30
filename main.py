@@ -8,6 +8,9 @@ from classes.Player import Player
 
 from classes.Map import Map
 from classes.Bullet import PlayerBullet, EnemyBullet
+from classes.powerUps import getAbilitiesAndParameters
+
+from classes.config import COLORS
 
 
 #Game inspired by N.Automata Hacking and Hades Gameplay!
@@ -31,21 +34,29 @@ def appStarted(app):
 def initApp(app, fromRestart):
     app.playerBullets = []
     app.playerDirection = (1, 0)
+    
     if(fromRestart):
         app.level = 1
         app.chambers = 0
         app.playerPowerUps = []
         app.playerHealth = 50
         app.maxPlayerHealth = 50
-    
-    app.map = Map(app.width, app.height, app.gridSize, 
-                  app.boxSize, app.playerHealth, app.maxPlayerHealth)
+
+
+    app.map = Map(app.width, app.height, app.gridSize, app.boxSize, 
+                  app.playerHealth, app.maxPlayerHealth, app.playerPowerUps, 
+                  app.chambers)
         
     app.gameOver = False
     app.completedMap = False
     app.displayTimerScreen = 50
 
     app.drawPowerUpScreen = False
+    app.headerFontX0, app.headerFontY0 = app.width//2, 60
+    app.headerFontSize = 50
+    app.screenPowerUps = []
+    app.powerUpRectBounds = []
+    
     app.generatingMap = False
 
     app.mouseX = 0
@@ -78,25 +89,81 @@ def drawGameOverScreen(app, canvas):
     canvas.create_text(app.width//2, app.height//2, text=f'Game Over', fill='white')
 
 
+
+
+def getPowerScreenRectCords(app, rectNum):
+
+    
+    rectMargin = 45
+    rectWidth = app.width - rectMargin*2
+    rectHeight = (app.height - rectMargin*2 - 
+            app.headerFontSize - app.headerFontY0)//3 - rectMargin
+
+    rectX0 = rectMargin
+    rectY0 = (app.headerFontY0 + app.headerFontSize + rectMargin + 
+                (rectHeight + rectMargin) * rectNum)
+    rectX1 = rectX0 + rectWidth
+    rectY1 = rectY0 + rectHeight
+
+    return (rectX0, rectY0, rectX1, rectY1)
+
+
+
+
+
+
+    
+
+def clickedInRectangle(x0, y0, x1, y1, mouseX, mouseY):
+    return x0 <= mouseX <= x1 and y0 <= mouseY <= y1
+
+
 #draw choose power up screen
 def drawPowerUpScreen(app, canvas):
-    headerFontX0, headerFontY0 = app.width//2, 60
-    headerFontSize = 50
+    # headerFontX0, headerFontY0 = app.width//2, 60
+    # headerFontSize = 50
     canvas.create_rectangle(0,0, app.width, app.height, fill='gray',)
-    canvas.create_text(headerFontX0, headerFontY0, text=f'Power Up', font=f'Myriad {headerFontSize} bold', fill='white')
-
-    rectMargin = 20
-    rectWidth = app.width - rectMargin*2
-    rectHeight = (app.height - rectMargin*2 - headerFontSize - headerFontY0)//3 - rectMargin
+    canvas.create_text(app.headerFontX0, app.headerFontY0, 
+                    text=f'Power Up', font=f'Myriad {app.headerFontSize} bold', 
+                    fill='white')
     
-    for powerUpRect in range(3):
-        rectX0 = rectMargin
-        rectY0 = headerFontY0 + headerFontSize + rectMargin + (rectHeight + rectMargin) * powerUpRect
-        rectX1 = rectX0 + rectWidth
-        rectY1 = rectY0 + rectHeight
+    for powerUpNum in range(3):
+
+        ability = app.screenPowerUps[powerUpNum]
+        #ability has 3 parts --> type, description, parameter
+
+        rectX0, rectY0, rectX1, rectY1 = getPowerScreenRectCords(app, powerUpNum)
+
+        
+        abilityTextX = (rectX0 + rectX1)//2
+        abilityTextY = rectY0 + 60
+        abilityText = ability[1]
+
+        parameterTextX = (rectX0 + rectX1)//2
+        parameterTextY = (rectY0+rectY1)//2+20
+        parameter = ability[2]
+        if(parameter != None):
+           
+            percent = int(parameter/app.map.player.getPowerUpAttr(ability[0])*100)
+
+            if(percent > 0):
+                parameterText = f'+ {abs(percent)}%'
+            elif(percent < 0):
+                parameterText = f'- {abs(percent)}%'
+            else:
+                parameterText = 'Already maxed out.'
+
+
+        
         canvas.create_rectangle(rectX0, rectY0, 
                                 rectX1, rectY1, 
-                                fill='blue', width = 2)
+                                fill=COLORS['offMap'], width = 2)
+        canvas.create_text(abilityTextX, abilityTextY, 
+                            text=abilityText,font='Myriad 15 bold', fill='white')
+        canvas.create_text(parameterTextX, parameterTextY, 
+                            text=parameterText, font='Myriad 15 bold',fill='white')
+
+                                
 
 #draw gameplay screen
 
@@ -169,7 +236,7 @@ def drawBigGrid(app, canvas):
 
 def playerFireBullet(app):
     app.playerBullets.append(PlayerBullet(app.map.player.x, app.map.player.y, 
-                                          app.boxSize, app.map.player.angle))
+                                          app.boxSize, app.map.player.angle, app.map.player.bulletDamage))
 
 def movePlayer(app, dcol, drow):
     app.map.movePlayer(dcol, drow)
@@ -189,6 +256,7 @@ def advanceToNextRoom(app):
     app.playerHealth = app.map.player.health
     app.maxPlayerHealth = app.map.player.maxHealth
     app.chambers+=1
+
     initApp(app, False)
 
 
@@ -200,13 +268,45 @@ def mouseMoved(app, event):
 
 def mousePressed(app, event):
     if(app.drawPowerUpScreen):
-        x = event.x
-        y = event.y
-        if(x > 50 and y > 50):
-            app.drawPowerUpScreen = False
-            advanceToNextRoom(app)
+        handlePowerScreenMousePressed(app, event)
     else:
-        playerFireBullet(app)
+        handleGameplayMousePressed(app)
+        
+
+
+def handlePowerScreenMousePressed(app, event):
+    
+    x = event.x
+    y = event.y
+
+    def proceed():
+        app.drawPowerUpScreen = False
+        app.screenPowerUps = []
+        print(app.playerPowerUps)
+        advanceToNextRoom(app)
+
+
+    r1 = getPowerScreenRectCords(app, 0)
+    r2 = getPowerScreenRectCords(app, 1)
+    r3 = getPowerScreenRectCords(app, 2)
+
+    if(clickedInRectangle(r1[0], r1[1], r1[2], r1[3], x, y)):
+        app.playerPowerUps.append(app.screenPowerUps[0])
+        proceed()
+    elif(clickedInRectangle(r2[0], r2[1], r2[2], r2[3], x, y)):
+        app.playerPowerUps.append(app.screenPowerUps[1])
+        proceed()
+    elif(clickedInRectangle(r3[0], r3[1], r3[2], r3[3], x, y)):
+        app.playerPowerUps.append(app.screenPowerUps[2])
+        proceed()
+       
+
+def handleGameplayMousePressed(app):
+    if(app.map.player.canShoot):
+            playerFireBullet(app)
+            app.map.player.canShoot = False
+
+
 
 def keyPressed(app, event):
     playerMovement = 1
@@ -223,9 +323,10 @@ def keyPressed(app, event):
         movePlayer(app, 0, playerMovement)
         app.playerDirection = (0, playerMovement)
     if(event.key == 'Space'):
-        app.map.player.isDashing = True
-        if(not movePlayer(app, app.playerDirection[0]*3, app.playerDirection[1]*3)):
-            movePlayer(app, app.playerDirection[0]*2, app.playerDirection[1]*2)
+        if(app.map.player.canDash):
+            app.map.player.isDashing = True
+            if(not movePlayer(app, app.playerDirection[0]*3, app.playerDirection[1]*3)):
+                movePlayer(app, app.playerDirection[0]*2, app.playerDirection[1]*2)
         
         #create a small dashing animation and paramat awer player.isDashing
         #dashing cooldown
@@ -260,15 +361,34 @@ def screenController(app):
         initApp(app, True)
         
     if(app.completedMap and app.displayTimerScreen < 0):
-        app.drawPowerUpScreen = True      
+        app.drawPowerUpScreen = True  
+    
+    if(app.drawPowerUpScreen and len(app.screenPowerUps) == 0):
+        app.screenPowerUps = getAbilitiesAndParameters()
+        
+           
         #clicking a power up turns     
 
 
 def playerController(app):
+    app.map.player.incTimers()
+
     if(app.map.player.isDashing):
-        app.map.player.dashingTimer+=1
-    if(app.map.player.isDashing and app.map.player.dashingTimer > 8):
-        app.map.player.isDashing = False          
+        app.map.player.dashingDuration+=1
+    if(app.map.player.isDashing and app.map.player.dashingDuration > 5):
+        app.map.player.isDashing = False  
+        app.map.player.canDash = False
+        app.map.player.dashingDuration = 0        
+    
+    if(app.map.player.dashingTimer > app.map.player.dashingCoolDown):
+        app.map.player.canDash = True
+        app.map.player.dashingTimer = 0
+
+    if(app.map.player.shootingTimer > app.map.player.shootingCoolDown):
+        app.map.player.canShoot = True
+        app.map.player.shootingTimer = 0
+    
+    
 
 def bulletController(app, bulletList, isPlayerBullet):
     for bullet in bulletList:

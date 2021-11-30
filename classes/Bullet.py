@@ -2,7 +2,7 @@
 from cmu_112_graphics import *
 import math
 import random
-import numpy as np
+from .config import COLORS
 
 
 #referenced Rabbid76's stackoverflow answer here
@@ -11,12 +11,12 @@ import numpy as np
 #contains bullet, playerbullet, enemybullet classes
 
 class Bullet:
-    def __init__(self, playerX, playerY, boxSize, angle):
+    def __init__(self, playerX, playerY, boxSize, angle, speed=35):
         
         self.x = playerX
         self.y = playerY    
         
-        self.speed = 45
+        self.speed = speed
         self.angle = angle
         self.theta = math.pi/2
         self.boxSize = boxSize
@@ -85,11 +85,6 @@ class EnemyBullet(Bullet):
         self.bulletDamage = 2
 
 
-    colors = {
-        'purple': "#3e236e",
-        'orange': "#ffa90a"
-    }
-
     def decideColor(type):
         chance = random.randint(0, 10)
         if(type == 'B'):
@@ -110,19 +105,21 @@ class EnemyBullet(Bullet):
 
     def redrawAll(self, canvas):
         radius = 20
-        canvas.create_oval(self.x-radius, self.y-radius, self.x+radius, self.y+radius, fill=EnemyBullet.colors[self.color], width=0)
+        canvas.create_oval(self.x-radius, self.y-radius, 
+                            self.x+radius, self.y+radius, 
+                            fill=COLORS[self.color], width=0)
 
 
 
 
 
 class PlayerBullet(Bullet):
-    def __init__(self, playerX, playerY, boxSize, angle):
+    def __init__(self, playerX, playerY, boxSize, angle, bulletDamage=2):
         super().__init__(playerX, playerY, boxSize, angle)
         self.bulletSpeed = 40
         self.bulletLength = 45
         self.bulletWidth = 6
-        self.bulletDamage = 2
+        self.bulletDamage = bulletDamage
     def __str__(self):
         return f'player bullet spawned at row {self.gridY}, col {self.gridX}'
 

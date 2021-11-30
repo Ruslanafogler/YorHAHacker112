@@ -8,11 +8,23 @@ from .Enemy import Enemy
 from .convertToGrid import convertToGrid
 from .AStar import isLegalMove
 from .RandomMapGen2 import getRandomMap, printMap
-from .config import COLORS
+from .config import COLORS, LEVEL_BY_CHAMBER_COUNT
 
 
-def createMap(boxSize):
-    unparsedMap, state = getRandomMap(4)
+
+def determineEnemyNum(difficulty):
+    #equation found with onlien curve fitting https://mycurvefit.com/
+    #with pts (0, 2), (5, 4), (10, 4), (15, 6), (18, 9), (21, 10)      
+    #y = 2.359863 + 0.07231715*x + 0.01421609*x^2
+    x0 = 2.359863
+    x1 = 0.07231715
+    x2 = 0.01421609
+    return x0 + x1*difficulty + x2*(difficulty**2)
+
+
+
+def createMap(boxSize, difficulty):
+    unparsedMap, state = getRandomMap(determineEnemyNum(difficulty))
     map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
 
     enemyList = []
@@ -24,7 +36,7 @@ def createMap(boxSize):
             if(elem == 'P'):
                 playerPosition = (col, row)
             elif(elem == 'A' or elem == 'B'):
-                    enemyList.append(Enemy(elem, col, row, boxSize))
+                    enemyList.append(Enemy(elem, col, row, boxSize, difficulty))
             
            
             if(isinstance(elem, str)):
@@ -32,8 +44,8 @@ def createMap(boxSize):
             else: 
                 map[row].append(int(elem))
 
-    print("FROM FORMULA")    
-    printMap(map)
+    #print("FROM FORMULA")    
+    #printMap(map)
 
 
     return map, state, playerPosition, enemyList
@@ -41,7 +53,7 @@ def createMap(boxSize):
 
 
 
-def createMapFromFile(boxSize):
+def createMapFromFile(boxSize, difficulty):
     
     f = open('classes/map.txt')
     unparsedMap = f.read().split('\n')
@@ -57,7 +69,7 @@ def createMapFromFile(boxSize):
             if(elem == 'P'):
                 playerPosition = (col, row)
             elif(elem == 'A' or elem == 'B'):
-                    enemyList.append(Enemy(elem, col, row, boxSize))
+                    enemyList.append(Enemy(elem, col, row, boxSize, difficulty))
             
            
             if(elem.isalpha()):
@@ -84,20 +96,20 @@ def getRowAndColLength(map):
     return newList.shape
 
 
-
-
-
-
+ 
 class Map:
-    def __init__(self, width, height, gridSize, boxSize, playerHealth, playerMaxHealth):
+    def __init__(self, width, height, gridSize, boxSize, 
+                 playerHealth, playerMaxHealth, playerPowerUps, 
+                 difficulty):
+
         self.margin = 100
         self.width = width
         self.height = height
         #createMapFromFile was used to create map previously
         # self.map, self.playerPosition, self.enemyList = createMap(boxSize)
-        self.map, self.state, self.playerPosition, self.enemyList = createMap(boxSize)
+        self.map, self.state, self.playerPosition, self.enemyList = createMap(boxSize, difficulty)
 
-        print(getRowAndColLength(self.map))
+        #print(getRowAndColLength(self.map))
         self.rowLength, self.colLength = getRowAndColLength(self.map)
 
         # print('player position', self.playerPosition)
@@ -112,16 +124,25 @@ class Map:
         Map.decideOffset(self)
 
         self.player = Player(self.playerPosition[0], self.playerPosition[1], 
-                            self.offsetX, self.offsetY, boxSize, playerHealth, playerMaxHealth)
+                            self.offsetX, self.offsetY, boxSize, playerHealth, playerMaxHealth, playerPowerUps)
 
         self.maxRowIndex = self.height//boxSize+self.offsetY
         self.maxColIndex = self.width//boxSize+self.offsetX
         self.boxesDim = self.width//boxSize
 
-        self.colors = COLORS['LEVEL3']
+        def determineDiff(difficulty):
+            if(difficulty > LEVEL_BY_CHAMBER_COUNT[3]):
+                return 3
+            elif(difficulty > LEVEL_BY_CHAMBER_COUNT[2]):
+                return 2
+            elif(difficulty >= LEVEL_BY_CHAMBER_COUNT[1]):
+                return 1
 
-        print('maprange columns', self.offsetX, self.maxColIndex)
-        print('maprange rows', self.offsetY, self.maxRowIndex)
+
+        self.colors = COLORS[f'LEVEL{determineDiff(difficulty)}']
+
+        #print('maprange columns', self.offsetX, self.maxColIndex)
+        #print('maprange rows', self.offsetY, self.maxRowIndex)
 
         
 
@@ -170,7 +191,7 @@ class Map:
         newPlayerCol = self.player.gridX+moveX
         newPlayerRow = self.player.gridY+moveY
         nextSpotValue = self.map[newPlayerRow][newPlayerCol]
-        print('player location', self.player.gridX, self.player.gridY)
+        #print('player location', self.player.gridX, self.player.gridY)
 
         if(nextSpotValue == 1 or
         nextSpotValue == 4):
@@ -206,7 +227,7 @@ class Map:
     
     def changeViewOffset(self, dx, dy):
         # print("BTW, max row and col lengths", self.rowLength, self.colLength)
-        print(dx, dy)
+        #print(dx, dy)
         if(self.offsetX + dx >= 0 and 
            self.offsetY + dy >= 0 and
            self.maxRowIndex + dy <= self.rowLength and
@@ -238,6 +259,17 @@ class Map:
                 return enemy
 
 
+    
+
+###############################
+#DRAWING FUNCTIONS
+
+    def redrawAll(self, canvas, mouseX, mouseY):  
+        Map.drawMap(self, canvas) 
+        self.player.redrawAll(canvas, mouseX, mouseY)
+    
+    
+    
     def drawMap(self, canvas):
         drawRow = 0
         for r in range(self.offsetY, self.maxRowIndex):
@@ -258,11 +290,6 @@ class Map:
                 drawCol+=1
             drawRow+=1
 
-    
-
-    def redrawAll(self, canvas, mouseX, mouseY):  
-        Map.drawMap(self, canvas) 
-        self.player.redrawAll(canvas, mouseX, mouseY)
                 
 
 
@@ -281,7 +308,7 @@ class Map:
         rowCoord = r*self.boxSize
         colCoord = c*self.boxSize
         if(type == 'obstacle'):
-            width = 2
+            width = 0
         else:
             width = 0
         
@@ -291,6 +318,19 @@ class Map:
         fill=self.colors[type],
         width = width
         )
+        if(type == 'obstacle'):
+            Map.drawObstacleShadow(canvas, colCoord, rowCoord, self.boxSize, width)
+
+    
+    def drawObstacleShadow(canvas, colCoord, rowCoord, boxSize, width):
+            canvas.create_rectangle(
+            colCoord, rowCoord+boxSize*0.6,
+            colCoord + boxSize, rowCoord + boxSize,
+            fill='#989898',
+            width = width
+            )
+
+
 
 
 

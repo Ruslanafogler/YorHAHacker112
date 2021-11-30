@@ -8,7 +8,7 @@ from .AStar import aStar
 #INCLUDES BOTH TYPE A AND B
 
 class Enemy(Moveable):
-     def __init__(self, type, gridX, gridY, boxSize):
+     def __init__(self, type, gridX, gridY, boxSize, difficulty):
         super().__init__(gridX, gridY, boxSize)
         self.type = type
         self.x = self.gridX*self.boxSize + self.boxSize//2
@@ -18,12 +18,7 @@ class Enemy(Moveable):
         self.aimingTimer = 0
         self.shootingTimer = 0
        
-        self.aimCoolDown = 10
-        self.fireCoolDown = 30
-        self.movementCoolDown = 10
-        self.health = 10
-        self.maxHealth=10
-
+        Enemy.scaleDifficulty(self, difficulty)
 
         self.movements = []
         self.movementIndex = -1
@@ -40,6 +35,49 @@ class Enemy(Moveable):
         return f'enemy{self.type} row coords, coords {self.gridX}, {self.gridY}, {self.x}, {self.y}'
 
     #the polygon one
+
+     def scaleDifficulty(self, difficulty):
+      #difficulty ranges from 1 to 21
+
+      self.fireCoolDown = Enemy.scaleFireCoolDownDiff(difficulty)
+      self.movementCoolDown = Enemy.scaleMovementCoolDownDiff(difficulty)
+      
+      #max health is 25
+      self.health = Enemy.scaleHealthDiff(difficulty)
+      self.maxHealth = self.health
+
+     
+     def scaleFireCoolDownDiff(d):
+        #equation found with onlien curve fitting https://mycurvefit.com/
+        #with pts (0, 60), (21, 20)
+        #y = -1.428571*x+60
+
+        x1 = -1.428571
+        x0 = 60
+        return x0 + x1*d      
+     
+     def scaleMovementCoolDownDiff(d):
+        #equation found with onlien curve fitting https://mycurvefit.com/
+        #with pts (0, 10), (12, 8), (21, 5), (21, 25)
+        #y = -0.2342342*x + 10.24324
+
+        x1 = -0.2342342
+        x0 = 10.24324
+        
+        return x0 + x1*d
+
+     def scaleHealthDiff(d):
+        #equation found with onlien curve fitting https://mycurvefit.com/
+        #with pts (0, 10), (5, 15), (15, 21), (21, 25)
+        #y = 10 + 1.360119*x - 0.08492063*x^2 + 0.002579365*x^3
+        x3 = 0.002579365
+        x2 = -0.08492063
+        x1 = 1.360119
+        x0 = 10
+        return x0 + x1*d + x2*(d**2) + x3*(d**3)
+        
+
+
 
 
      def incTimers(self):
