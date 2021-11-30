@@ -292,7 +292,6 @@ class Map:
 
                 
 
-
     def drawEnemy(self, canvas, enemy, r, c):
         rowCoord = r*self.boxSize+self.boxSize//2
         colCoord = c*self.boxSize+self.boxSize//2
@@ -319,14 +318,22 @@ class Map:
         width = width
         )
         if(type == 'obstacle'):
-            Map.drawObstacleShadow(canvas, colCoord, rowCoord, self.boxSize, width)
+            Map.drawObstacleShadow(self, canvas, colCoord, rowCoord, self.boxSize, width)
 
     
-    def drawObstacleShadow(canvas, colCoord, rowCoord, boxSize, width):
+    def drawObstacleShadow(self, canvas, colCoord, rowCoord, boxSize, width):
+            sideMargin = boxSize*0.08
+            bottomMargin = boxSize*0.92
             canvas.create_rectangle(
-            colCoord, rowCoord+boxSize*0.6,
+            colCoord, rowCoord,
+            colCoord + sideMargin, rowCoord + boxSize,
+            fill=self.colors['shadow'],
+            width = width
+            )
+            canvas.create_rectangle(
+            colCoord, rowCoord+bottomMargin,
             colCoord + boxSize, rowCoord + boxSize,
-            fill='#989898',
+            fill=self.colors['shadow'],
             width = width
             )
 

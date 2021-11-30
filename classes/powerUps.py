@@ -5,28 +5,28 @@ import random
 #apply to player powers only
 
 
-powerUps = [
-    ('ON_DEFEAT_RECOVER_HP', f"After defeating an enemy, there's a chance to recover a set amount of HP"),
+# powerUps = [
+#     ('ON_DEFEAT_RECOVER_HP', f"After defeating an enemy, there's a chance to recover a set amount of HP"),
     
-    ('BULLET_SPEED', "When pressing Mouse right-click, your bullets fly out at a faster speed"),
-    ("BULLET_POWER_UP", "Shoot with Mouse right-click. Inflict greater damage on enemies with your bullets."),
+#     ('BULLET_SPEED', "When pressing Mouse right-click, your bullets fly out at a faster speed"),
+#     ("BULLET_POWER_UP", "Shoot with Mouse right-click. Inflict greater damage on enemies with your bullets."),
 
-    ('DASH_DISTANCE',"Press SPACE to dash. Your dash distance can travel one space further"),
-    ('DASH_COOLDOWN', "After dashing with SPACE, it takes less time before you can dash again."),
-    ('DASH_RECOVER_HP', f"After dashing with SPACE, there's a chance to recover a set amount of HP"),
+#     ('DASH_DISTANCE',"Press SPACE to dash. Your dash distance can travel one space further"),
+#     ('DASH_COOLDOWN', "After dashing with SPACE, it takes less time before you can dash again."),
+#     ('DASH_RECOVER_HP', f"After dashing with SPACE, there's a chance to recover a set amount of HP"),
     
-    ('SECOND_CHANCE', "Revive after dying. Can only happen once."),
+#     ('SECOND_CHANCE', "Revive after dying. Can only happen once."),
     
-    ('RECOVER_HP', "Recover HP"),
-    ('INCREASE_MAX_HP', 'Increase MAX HP'),
+#     ('RECOVER_HP', "Recover HP"),
+#     ('INCREASE_MAX_HP', 'Increase MAX HP'),
     
-    ('ABSORB_ORANGE', "Orange bullets are absorbed. No damage is dealt when hit by them anymore."),
-    ('ABSORB_PURPLE', "Purple bullets are absorbed. No damage is dealt when hit by them anymore."),
+#     ('ABSORB_ORANGE', "Orange bullets are absorbed. No damage is dealt when hit by them anymore."),
+#     ('ABSORB_PURPLE', "Purple bullets are absorbed. No damage is dealt when hit by them anymore."),
 
-    #press f to turn enemies blue and freeze their movement for 3 seconds
-    #press e to fire powerful red bullets that can phase through obstacles every 8 seconds
+#     #press f to turn enemies blue and freeze their movement for 3 seconds
+#     #press e to fire powerful red bullets that can phase through obstacles every 8 seconds
 
-]
+# ]
 
 
 #for the sake of attaining MVP quicker lool

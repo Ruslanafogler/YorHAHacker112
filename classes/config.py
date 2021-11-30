@@ -5,6 +5,7 @@ COLORS = {
         'offMap': '#817b69',
         'onMap': '#beb99c',
         'obstacle': '#dad3c5',
+        'shadow': '#989898'
     },
     
     'LEVEL2':{
@@ -19,12 +20,20 @@ COLORS = {
         'obstacle': '#f79b80',
     },
 
+    'lightpurple': '#C6B2E6',
+    'lightorange': '#FFDD99',
     'purple': '#3e236e',
     'orange': '#ffa90a',
     'green': '#98fb98',
     'red': '#ff6961',
+    'lightgray': '#e4e6eb',
+    'mediumgray': '#a8a8a8',
     'darkgray': '#444444',
-    'brightPurple': '#6e44ff',
+    'brightpurple': '#6e44ff',
+
+    'enemyA': '#3a3b3c',
+    'enemyB': '#242526',
+
     
     #repeated from lv1, but they are tech default colors so repetition whatever
     'offMap': '#817b69',

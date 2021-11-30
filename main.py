@@ -325,8 +325,10 @@ def keyPressed(app, event):
     if(event.key == 'Space'):
         if(app.map.player.canDash):
             app.map.player.isDashing = True
-            if(not movePlayer(app, app.playerDirection[0]*3, app.playerDirection[1]*3)):
-                movePlayer(app, app.playerDirection[0]*2, app.playerDirection[1]*2)
+            for dashRange in range(app.map.player.dashRange, 0, -1):
+                if(movePlayer(app, app.playerDirection[0]*dashRange, app.playerDirection[1]*dashRange) != False):
+                    break
+                    
         
         #create a small dashing animation and paramat awer player.isDashing
         #dashing cooldown
@@ -387,6 +389,13 @@ def playerController(app):
     if(app.map.player.shootingTimer > app.map.player.shootingCoolDown):
         app.map.player.canShoot = True
         app.map.player.shootingTimer = 0
+
+    app.map.player.onHit()
+    if(app.map.player.hit):
+        app.map.player.hitTimer+=1
+        if(app.map.player.hitTimer > 2):
+            app.map.player.hit = False
+
     
     
 
@@ -397,11 +406,13 @@ def bulletController(app, bulletList, isPlayerBullet):
         if(bulletResult != 'success'):
             if(bulletResult == 'player'):
                 bullet.damage(app.map.player)
+                app.map.player.hit = True
 
             elif(isinstance(bulletResult, tuple)):
                 enemy = app.map.findEnemy(bulletResult[0], bulletResult[1])
                 if(enemy):
                     bullet.damage(enemy)
+                    enemy.hit = True
                 else:
                     print('bruh wtf there should be an enemy here')
 
@@ -418,6 +429,11 @@ def enemyController(app):
             app.map.enemyList.remove(enemy)
             app.map.map[enemy.gridY][enemy.gridX] = 0
 
+        enemy.onHit()
+        if(enemy.hit):
+            enemy.hitTimer+=1
+            if(enemy.hitTimer > 3):
+                enemy.hit = False
         
         if(not app.map.player.isDashing):
             enemy.dealCollisionDmg(app.map.player)
@@ -426,19 +442,17 @@ def enemyController(app):
         enemy.incTimers()
         #enemy fires at the player:
         if(enemy.shootingTimer > enemy.fireCoolDown):
-
+            
             if(enemy.type == 'A'):
                 enemy.fireBullet(EnemyBullet(enemy.x, enemy.y,
                                         enemy.boxSize, enemy.angle,
                                         enemy.type))
-            else:
+            elif(enemy.type == 'B'):
                 numBullets = 4
                 for x in range(numBullets):
                     enemy.fireBullet(EnemyBullet(enemy.x, enemy.y,
                         enemy.boxSize, enemy.angle+math.pi*2/numBullets*x,
                         enemy.type))
-
-
             enemy.shootingTimer = 0
         
         bulletController(app, enemy.bullets, False)
@@ -448,6 +462,7 @@ def enemyController(app):
             if(enemy.movementTimer > enemy.movementCoolDown):
                 app.map.enemyAutoTravel(enemy)
                 enemy.movementTimer = 0    
+                    
 
         
 ####################################

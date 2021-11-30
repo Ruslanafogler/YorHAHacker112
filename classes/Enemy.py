@@ -3,6 +3,7 @@ import math
 import numpy as np
 from .Moveable import Moveable
 from .AStar import aStar
+from .config import COLORS
 
 
 #INCLUDES BOTH TYPE A AND B
@@ -17,8 +18,12 @@ class Enemy(Moveable):
         self.movementTimer = 0
         self.aimingTimer = 0
         self.shootingTimer = 0
+        
+        self.hitTimer = 0
+        self.hit = False
        
         Enemy.scaleDifficulty(self, difficulty)
+        Enemy.setEnemyColor(self)
 
         self.movements = []
         self.movementIndex = -1
@@ -77,7 +82,17 @@ class Enemy(Moveable):
         return x0 + x1*d + x2*(d**2) + x3*(d**3)
         
 
+     def setEnemyColor(self):
+         if(self.type == 'A'):
+            self.color = COLORS['enemyA']
+         elif(self.type=='B'):
+            self.color = COLORS['enemyB']
 
+     def onHit(self):
+        if(self.hit):
+           self.color = COLORS['lightgray']
+        else:
+            Enemy.setEnemyColor(self)
 
 
      def incTimers(self):
@@ -110,6 +125,8 @@ class Enemy(Moveable):
             Moveable.getAngle(self, playerX, playerY, math.pi/6)
 
 
+
+
      def redrawAll(self, canvas, playerX, playerY):
          Enemy.getAngle(self, playerX, playerY)
          if(self.type == 'A'):
@@ -140,7 +157,7 @@ class Enemy(Moveable):
                             x2, y2,
                             x3, y3,
                             x4, y4,
-                            fill='#3a3b3c'
+                            fill=self.color
                             )
 
 
@@ -148,7 +165,7 @@ class Enemy(Moveable):
      def drawEnemyB(self, canvas):
 
         canvas.create_oval(self.x - self.enemyR, self.y-self.enemyR,
-                    self.x + self.enemyR, self.y + self.enemyR, fill='#242526')
+                    self.x + self.enemyR, self.y + self.enemyR, fill=self.color)
 
             
 
