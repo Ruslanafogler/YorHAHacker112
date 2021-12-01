@@ -7,7 +7,7 @@ from .config import COLORS
 
 
 #INCLUDES BOTH TYPE A AND B
-
+#both enemy designs and ai patterns inspired by Nier Automata hacking minigame
 class Enemy(Moveable):
      def __init__(self, type, gridX, gridY, boxSize, difficulty):
         super().__init__(gridX, gridY, boxSize)
@@ -44,6 +44,7 @@ class Enemy(Moveable):
      def scaleDifficulty(self, difficulty):
       #difficulty ranges from 1 to 21
 
+
       self.fireCoolDown = Enemy.scaleFireCoolDownDiff(difficulty)
       self.movementCoolDown = Enemy.scaleMovementCoolDownDiff(difficulty)
       
@@ -54,12 +55,14 @@ class Enemy(Moveable):
      
      def scaleFireCoolDownDiff(d):
         #equation found with onlien curve fitting https://mycurvefit.com/
-        #with pts (0, 60), (21, 20)
-        #y = -1.428571*x+60
+        #with pts (0, 60), (9, 30), (20, 12)
+        #y = 60 - 4.09697*x + 0.08484848*x^2
 
-        x1 = -1.428571
+        
+        x2 = 0.08484848
+        x1 = -4.09697
         x0 = 60
-        return x0 + x1*d      
+        return x0 + x1*d + x2*(d**2)   
      
      def scaleMovementCoolDownDiff(d):
         #equation found with onlien curve fitting https://mycurvefit.com/

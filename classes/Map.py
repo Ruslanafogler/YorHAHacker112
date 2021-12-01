@@ -24,6 +24,7 @@ def determineEnemyNum(difficulty):
 
 
 def createMap(boxSize, difficulty):
+    
     unparsedMap, state = getRandomMap(determineEnemyNum(difficulty))
     map = [([]*len(unparsedMap[0])) for row in range(len(unparsedMap))]
 
@@ -52,8 +53,9 @@ def createMap(boxSize, difficulty):
 
 
 
-
-def createMapFromFile(boxSize, difficulty):
+#this method was adopted from daFluffyPotato's vid on map generation in video games
+#https://www.youtube.com/watch?v=gE2gTCwLdFM 
+def createMapFromFile(boxSize, chambers):
     
     f = open('classes/map.txt')
     unparsedMap = f.read().split('\n')
@@ -69,7 +71,7 @@ def createMapFromFile(boxSize, difficulty):
             if(elem == 'P'):
                 playerPosition = (col, row)
             elif(elem == 'A' or elem == 'B'):
-                    enemyList.append(Enemy(elem, col, row, boxSize, difficulty))
+                    enemyList.append(Enemy(elem, col, row, boxSize, chambers))
             
            
             if(elem.isalpha()):
@@ -100,14 +102,14 @@ def getRowAndColLength(map):
 class Map:
     def __init__(self, width, height, gridSize, boxSize, 
                  playerHealth, playerMaxHealth, playerPowerUps, 
-                 difficulty):
+                 level, chambers):
 
         self.margin = 100
         self.width = width
         self.height = height
         #createMapFromFile was used to create map previously
         # self.map, self.playerPosition, self.enemyList = createMap(boxSize)
-        self.map, self.state, self.playerPosition, self.enemyList = createMap(boxSize, difficulty)
+        self.map, self.state, self.playerPosition, self.enemyList = createMap(boxSize, chambers)
 
         #print(getRowAndColLength(self.map))
         self.rowLength, self.colLength = getRowAndColLength(self.map)
@@ -130,16 +132,9 @@ class Map:
         self.maxColIndex = self.width//boxSize+self.offsetX
         self.boxesDim = self.width//boxSize
 
-        def determineDiff(difficulty):
-            if(difficulty >= LEVEL_BY_CHAMBER_COUNT[3]):
-                return 3
-            elif(difficulty >= LEVEL_BY_CHAMBER_COUNT[2]):
-                return 2
-            else:
-                return 1
 
 
-        self.colors = COLORS[f'LEVEL{determineDiff(difficulty)}']
+        self.colors = COLORS[f'LEVEL{level}']
 
         #print('maprange columns', self.offsetX, self.maxColIndex)
         #print('maprange rows', self.offsetY, self.maxRowIndex)
@@ -226,8 +221,6 @@ class Map:
 
     
     def changeViewOffset(self, dx, dy):
-        # print("BTW, max row and col lengths", self.rowLength, self.colLength)
-        #print(dx, dy)
         if(self.offsetX + dx >= 0 and 
            self.offsetY + dy >= 0 and
            self.maxRowIndex + dy <= self.rowLength and
@@ -238,19 +231,10 @@ class Map:
            self.maxRowIndex+=dy
            self.maxColIndex+=dx
 
-        #    print("VIEW CHANED")
-        #    print('X: drawing cols from', self.offsetX, self.maxColIndex)
-        #    print('Y: drawing rows frwom', self.offsetY, self.maxRowIndex)
-
            return True
         else:
-            # print('X: drawing cols from', self.offsetX, self.maxColIndex)
-            # print('Y: drawing rdows from', self.offsetY, self.maxRowIndex)
+
             return False
-       
-
-
-        # self.map = Map.setMap(self)
 
 
     def findEnemy(self, r, c):

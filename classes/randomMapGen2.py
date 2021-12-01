@@ -1,22 +1,25 @@
 
-#referenced Kian's idea on random rect + tunnel map gen
-#and also these two articles for dungeon rectangle and tunnels
-# (I did one on random walk tunnels but I didn't like it so  I scrapped it lol) 
-# https://gamedevelopment.tutsplus.com/tutorials/create-a-procedurally-generated-dungeon-cave-system--gamedev-10099
-#and this one https://python.plainenglish.io/create-a-random-dungeon-with-python-f17118c1eebd
 
+
+#referenced 112 TA Kian's idea on random rect + tunnel map gen + cellular auto obstacles
+#(scrapped by previous random walk tunnel generation in tp2 because I didn't like it)
+
+#Used these two articles for figuring out random rect & tunnel generation in a grid map
+#  https://python.plainenglish.io/create-a-random-dungeon-with-python-f17118c1eebd
 #glanced at this one a little:
 #http://roguebasin.com/?title=A_Simple_Dungeon_Generator_for_Python_2_or_3
 
 
-#cellular automata tutorial:
+#cellular automata tutorial that I heavily relied on to randomly spawn obstacles in the map: 
+# https://gamedevelopment.tutsplus.com/tutorials/generate-random-cave-levels-using-cellular-automata--gamedev-9664
 
 import random
 import copy
 
 
 
-
+#print map method referenced from ryancollingwood's astar github
+#https://gist.github.com/ryancollingwood/32446307e976a11a1185a5394d6657bc
 def printMap(map):
     for row in map:
         line = []

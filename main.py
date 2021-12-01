@@ -10,10 +10,17 @@ from classes.Map import Map
 from classes.Bullet import PlayerBullet, EnemyBullet
 from classes.powerUps import getAbilitiesAndParameters
 
-from classes.config import COLORS
+from classes.config import COLORS, LEVEL_BY_CHAMBER_COUNT
 
 
 #Game inspired by N.Automata Hacking and Hades Gameplay!
+#Designs of player, enemy, bullets inspired by Nier Automata Hacking
+#Dash mechanic, dungeon crawling, game rest, powerup capability inspired by Hades
+
+#uses cmu graphics, tkinter for drawing/animation
+#https://www.cs.cmu.edu/~112/notes/notes-graphics.html 
+#a little bit of numpy in calculating map parameters
+#https://numpy.org/doc/ 
 
 
 
@@ -30,6 +37,13 @@ def appStarted(app):
     initApp(app, app.fromRestart)
 
 
+def determineLevel(difficulty):
+    if(difficulty >= LEVEL_BY_CHAMBER_COUNT[3]):
+        return 3
+    elif(difficulty >= LEVEL_BY_CHAMBER_COUNT[2]):
+        return 2
+    else:
+        return 1
 
 def initApp(app, fromRestart):
     app.playerBullets = []
@@ -37,15 +51,17 @@ def initApp(app, fromRestart):
     
     if(fromRestart):
         app.level = 1
-        app.chambers = 0
+        app.chambers = 1
         app.playerPowerUps = []
         app.playerHealth = 50
         app.maxPlayerHealth = 50
+    else:
+        app.level = determineLevel(app.chambers)
 
 
 
     app.map = Map(app.width, app.height, app.gridSize, app.boxSize, 
-                  app.playerHealth, app.maxPlayerHealth, app.playerPowerUps, 
+                  app.playerHealth, app.maxPlayerHealth, app.playerPowerUps, app.level,  
                   app.chambers)
         
     app.gameOver = False
@@ -57,6 +73,8 @@ def initApp(app, fromRestart):
     app.headerFontSize = 50
     app.screenPowerUps = []
     app.powerUpRectBounds = []
+
+    app.drawWinScreen = False
     
     app.generatingMap = False
 
@@ -68,7 +86,9 @@ def initApp(app, fromRestart):
 #######################################
 #DRAWING STUFF
 def redrawAll(app, canvas):
-    if(app.drawPowerUpScreen):
+    if(app.drawWinScreen):
+        drawWinScreen(app, canvas)
+    elif(app.drawPowerUpScreen):
         drawPowerUpScreen(app, canvas)
     elif(app.gameOver):
         drawGameOverScreen(app, canvas)
@@ -89,12 +109,16 @@ def drawGameOverScreen(app, canvas):
     canvas.create_rectangle(0,0, app.width, app.height, fill='black',)
     canvas.create_text(app.width//2, app.height//2, text=f'Game Over', fill='white')
 
+def drawWinScreen(app, canvas):
+    canvas.create_rectangle(0,0, app.width, app.height, fill=COLORS['green'],)
+    canvas.create_text(app.width//2, app.height//2, text=f'You win!!!', font='Myriad 35 bold',  fill='black')
+
+
 
 
 
 def getPowerScreenRectCords(app, rectNum):
 
-    
     rectMargin = 45
     rectWidth = app.width - rectMargin*2
     rectHeight = (app.height - rectMargin*2 - 
@@ -109,11 +133,6 @@ def getPowerScreenRectCords(app, rectNum):
     return (rectX0, rectY0, rectX1, rectY1)
 
 
-
-
-
-
-    
 
 def clickedInRectangle(x0, y0, x1, y1, mouseX, mouseY):
     return x0 <= mouseX <= x1 and y0 <= mouseY <= y1
@@ -143,21 +162,29 @@ def drawPowerUpScreen(app, canvas):
         parameterTextX = (rectX0 + rectX1)//2
         parameterTextY = (rectY0+rectY1)//2+20
         parameter = ability[2]
+        parameterText = 'No Text to display'
+
+
         if(parameter != None):
            
             currentPlayerNumber = app.map.player.getPowerUpAttr(ability[0])
-            if(currentPlayerNumber != 0):
-                percent = int(parameter/currentPlayerNumber)*100
+            
+            
+                
+            if(ability[3] == '%'):
+                if(currentPlayerNumber != 0):
+                    percent = int(parameter/currentPlayerNumber*100)
+                    if(percent >= 0):
+                        parameterText = f'+ {abs(percent)}%'
+                    elif(percent <= 0):
+                        parameterText = f'- {abs(percent)}%'
+                    else:
+                        parameterText = 'Already maxed out.'
+            else: 
+                parameterText = f'+ {parameter}'
 
-                if(percent > 0):
-                    parameterText = f'+ {abs(percent)}%'
-                elif(percent < 0):
-                    parameterText = f'- {abs(percent)}%'
-                else:
-                    parameterText = 'Already maxed out.'
 
 
-        
         canvas.create_rectangle(rectX0, rectY0, 
                                 rectX1, rectY1, 
                                 fill=COLORS['offMap'], width = 2)
@@ -216,7 +243,7 @@ def drawGameplayScreen(app, canvas):
         drawMap(app, canvas)
         drawPlayerBullets(app, canvas)
         drawEnemyBullets(app, canvas)
-        drawBigGrid(app, canvas)
+        #drawBigGrid(app, canvas)
         drawPlayerHealth(app, canvas)
         drawPlayerProgress(app, canvas)
         if(app.completedMap):
@@ -287,7 +314,6 @@ def handlePowerScreenMousePressed(app, event):
     def proceed():
         app.drawPowerUpScreen = False
         app.screenPowerUps = []
-        print(app.playerPowerUps)
         advanceToNextRoom(app)
 
 
@@ -330,17 +356,17 @@ def keyPressed(app, event):
     if(event.key == 'Space'):
         if(app.map.player.canDash):
             app.map.player.isDashing = True
+            #for loop solution inspired by 112 TA Adhvik's advice on breaking once a dash is successful
             for dashRange in range(app.map.player.dashRange, 0, -1):
                 if(movePlayer(app, app.playerDirection[0]*dashRange, app.playerDirection[1]*dashRange)):
                     break
                     
-        
-        #create a small dashing animation and paramat awer player.isDashing
-        #dashing cooldown
+    
 
 ##################################################
 #TIMER FIRED STUFF
 def timerFired(app):
+    winGameController(app)
     gameOverController(app)
     screenController(app)
     playerController(app)
@@ -356,10 +382,16 @@ def gameOverController(app):
         app.gameOver = True
         app.map.enemyList = []
 
+def winGameController(app):
+    if(app.chambers >= LEVEL_BY_CHAMBER_COUNT['totalChambers']):
+        app.drawWinScreen = True
+        app.map.enemyList = []
+
 def screenController(app):
     if(app.map and not app.generatingMap and not app.gameOver and not app.drawPowerUpScreen and len(app.map.enemyList) == 0):
         app.completedMap = True
         app.displayTimerScreen-=1
+
     
     if(app.gameOver):
         app.displayTimerScreen-=1
@@ -372,9 +404,7 @@ def screenController(app):
     
     if(app.drawPowerUpScreen and len(app.screenPowerUps) == 0):
         app.screenPowerUps = getAbilitiesAndParameters()
-        
            
-        #clicking a power up turns     
 
 
 def playerController(app):

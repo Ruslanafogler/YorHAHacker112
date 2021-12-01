@@ -9,6 +9,7 @@
 
 
 #ok ngl I used these ones the most by far, way more than ^^
+#heavily referred to their A-star structure and methods
 #https://github.com/BaijayantaRoy/Medium-Article/blob/master/A_Star.ipynb 
 #Sebasitian Joy's channel
 #https://www.youtube.com/watch?v=-L-WgKMFuhE&t=391s
@@ -20,7 +21,8 @@ import heapq
 import math
 
 
-
+#this method was adopted from daFluffyPotato's vid on map generation in video games
+#https://www.youtube.com/watch?v=gE2gTCwLdFM 
 def createTestMap():
     
     f = open('map.txt')
@@ -85,7 +87,8 @@ def getPath(node):
         currentNode = currentNode.parent
     return path[::-1]
 
-
+#getting the movements(each as tuples) that the enemy makes to get to their final destination
+#by going back up through the path of nodes
 def getMovements(node):
     movements = []
     currentNode = node
@@ -134,7 +137,7 @@ def aStar(map, start, end, allowDiagMoves = False):
         iterations+=1
 
         if(iterations > maxIterations):
-            print('exceeded iteration max, returning whatever we got')
+            #print('exceeded iteration max, returning whatever we got')
             #return getPath(currentNode)
             return getMovements(currentNode)
 
@@ -144,8 +147,8 @@ def aStar(map, start, end, allowDiagMoves = False):
         currentNode = unVisitedList[0]
         currentIndex = 0
 
-#enumerate documentatino on real python
-#https://realpython.com/python-enumerate/
+        #enumerate documentatino on real python
+        #https://realpython.com/python-enumerate/
         for index, node in enumerate(unVisitedList):
             if(node.f < currentNode.f):
                 currentNode = node
@@ -159,7 +162,7 @@ def aStar(map, start, end, allowDiagMoves = False):
         #we found the player. Return the path
 
         #usually checks if currentNode == endNode
-        #however I want the enemy to stop a distance away from the player
+        #HOWEVER I want the enemy to stop a distance away from the player
         if(currentNode.f != 0 and currentNode.f < 30):
             # print("DISTANCES", currentNode.f)
             # path = getPath(currentNode)
@@ -235,7 +238,7 @@ def isLegalMove(map, rowInc, colInc):
     else:
         return False
         
-#print map method referenced from this dude's astar github
+#print map method referenced from ryancollingwood's astar github
 #https://gist.github.com/ryancollingwood/32446307e976a11a1185a5394d6657bc
 def printMap(map, path):
     for step in path:
@@ -260,7 +263,7 @@ def testAStar(print_maze = True):
     
     map, player, enemyList = createTestMap()
 
-    enemy = enemyList[2]
+    enemy = enemyList[0]
 
     print('a star time')
     print(enemy, player)

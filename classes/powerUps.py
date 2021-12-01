@@ -32,15 +32,15 @@ import random
 #for the sake of attaining MVP quicker lool
 easyPowerUps = [
     
-    ('BULLET_COOLDOWN', "When pressing Mouse right-click, it takes less time to shoot between fired bullets"),
-    ("BULLET_POWER_UP", "Shoot with Mouse right-click. Inflict greater damage on enemies with your bullets."),
+    ('BULLET_COOLDOWN', "When pressing Mouse left-click, it takes less time to shoot between fired bullets", '%'),
+    ("BULLET_POWER_UP", "Shoot with Mouse left-click. Inflict greater damage on enemies with your bullets.", '%'),
 
-    ('DASH_DISTANCE',"Press SPACE to dash. Your dash distance can travel one space further"),
-    ('DASH_COOLDOWN', "After dashing with SPACE, it takes less time before you can dash again."),
+    ('DASH_DISTANCE',"Press SPACE to dash. Your dash distance can travel one space further", 'num'),
+    ('DASH_COOLDOWN', "After dashing with SPACE, it takes less time before you can dash again.", '%'),
     
     
-    ('HP_RECOVER', "Recover HP"),
-    ('HP_INCREASE', 'Increase MAX HP'),
+    ('HP_RECOVER', "Recover HP", 'num'),
+    ('HP_INCREASE', 'Increase MAX HP', 'num'),
     
 ]
 
@@ -65,6 +65,7 @@ def getAbilitiesAndParameters():
         type = ability[0]
         description = ability[1]
         parameter = None
+        incType = ability[2]
 
         if(type == ('BULLET_COOLDOWN')):
             parameter = -random.randint(3, 5)
@@ -78,12 +79,16 @@ def getAbilitiesAndParameters():
         elif(type == ('DASH_COOLDOWN')):
             parameter = -random.randint(5, 10)
         
-        else: #(type.find('HP')):
+        elif(type == ('HP_INCREASE')):
             parameter = 10
+        else:
+            #hp recovery
+            parameter = random.randint(10, 35)
         
         newAbilityList.append(type)
         newAbilityList.append(description)
         newAbilityList.append(parameter)
+        newAbilityList.append(incType)
 
         result.append(newAbilityList)
 

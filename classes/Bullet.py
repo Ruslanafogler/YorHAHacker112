@@ -6,10 +6,11 @@ from .config import COLORS
 from .Moveable import Moveable
 
 
-#referenced Rabbid76's stackoverflow answer here
+#referenced Rabbid76's stackoverflow answer here for movement of a bullet
 #https://stackoverflow.com/questions/59977052/shooting-a-bullet-in-pygame-in-the-direction-of-mouse
 
 #contains bullet, playerbullet, enemybullet classes
+#all bullet designs inspired by bullet shapes and colors from Nier Automata hacking
 
 class Bullet:
     def __init__(self, playerX, playerY, boxSize, angle, speed=35):
@@ -25,7 +26,7 @@ class Bullet:
   
     def damage(self, other):
         other.health-=self.bulletDamage
-        print(other, other.health)      
+            
 
 
     def isLegalIndex(map, row, col):

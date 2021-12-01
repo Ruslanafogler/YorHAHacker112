@@ -1,4 +1,5 @@
 
+#basic config for the game(colors and chambercount)
 COLORS = {
 
     'LEVEL1': {
@@ -46,9 +47,14 @@ COLORS = {
 }
 
 LEVEL_BY_CHAMBER_COUNT = {
-    1: 5, # 5 chambers
-    2: 7, # 7 chambers
-    3: 9 # 9 chambers
-    #21 total chambers
+    # # 0-6 chambers through lv 1
+    # # 6-12 chambers through lv 2
+    # # 12-21 chambers through lv 3
+    # #21 total chambers
+    1:0,
+    2:6,
+    3:12,
+    'totalChambers': 21
+
 }
 

@@ -15,7 +15,7 @@ class Player(Moveable):
         
         self.x = (gridX - offsetX)*boxSize + boxSize//2
         self.y = (gridY - offsetY)*boxSize+boxSize//2    
-        #print('player class pos', gridX, gridY, self.x, self.y)
+
         self.angle = math.pi/2
         self.theta = math.pi/2
         self.health = health
@@ -40,17 +40,21 @@ class Player(Moveable):
 
         self.canShoot = True
         self.shootingTimer = 0
-        self.shootingCoolDown = 12 
+        self.shootingCoolDown = 8
 
         self.bulletDamage = 2
 
 
-        self.shootingCoolDownCap = 0
-        self.dashingCoolDownCap = 0
-        self.bulletDamageCap = 25
-        self.maxHealthCap = 150
-        self.dashCap = 5
+        self.caps = {
+            'BULLET_COOLDOWN': 0,
+            "BULLET_POWER_UP": 25,
+            'DASH_DISTANCE': 5,
+            'DASH_COOLDOWN': 0,
+            'HP_RECOVER': self.maxHealth,
+            'HP_INCREASE': 150
+        }
 
+        self.powerUps = dict()
         Player.applyPowerUps(self, powerUps)
 
         
@@ -70,11 +74,47 @@ class Player(Moveable):
         self.shadowDropDown = 6
 
 
-
         self.dashingTriangleHeight = 60
         self.dashingTriangleWidth = 50
     
 
+
+    def storePlayerPowerUps(self, powerUps):
+        for powerUp in powerUps:
+            type = powerUp[0]
+            parameter = powerUp[1]
+            self.powerUps[type] = self.powerUps.get(type, 0) + parameter
+
+    
+
+    def applyPowerUps(self, powerUps):
+        
+        for powerUp in powerUps:
+            
+            typeOfPowerUp = powerUp[0]
+            parameter = powerUp[2]
+            cap = self.caps[typeOfPowerUp]
+
+            
+            if(typeOfPowerUp == 'BULLET_COOLDOWN'):
+                self.shootingCoolDown = max(self.shootingCoolDown + parameter, cap)
+            elif(typeOfPowerUp == 'BULLET_POWER_UP'):
+                self.bulletDamage = min(self.bulletDamage + parameter, cap)
+            elif(typeOfPowerUp == 'DASH_DISTANCE'):
+                self.dashRange = min(self.dashRange + parameter, cap)
+                if(self.dashRange == 4):
+                    self.dashingColor = COLORS['green']
+                elif(self.dashRange == 5):
+                    self.dashingColor = COLORS['brightpurple']
+            elif(typeOfPowerUp == 'DASH_COOLDOWN'):
+                self.dashingCoolDown = max(self.dashingCoolDown + parameter, cap)
+            elif(typeOfPowerUp == 'HP_RECOVER'):
+                self.health = min(self.health + parameter, cap)
+                self.powerUps['HP_RECOVER'] = 0
+            elif(typeOfPowerUp == 'HP_INCREASE'):
+                self.maxHealth = min(self.maxHealth + parameter, cap)
+            
+           
 
 
     def getPowerUpAttr(self, typeOfPowerUp):
@@ -91,37 +131,6 @@ class Player(Moveable):
             return self.health
         elif(typeOfPowerUp == 'HP_INCREASE'):
             return self.maxHealth
-
-
-    def applyPowerUps(self, powerUps):
-        
-        for powerUp in powerUps:
-            
-            typeOfPowerUp = powerUp[0]
-            parameter = powerUp[2]
-
-            #argh this is so repetitive from above
-            #please think of a bettesr way soon
-            #without using enumerate or whatever bc I don't trust it
-            
-            if(typeOfPowerUp == 'BULLET_COOLDOWN'):
-                self.shootingCoolDown = max(self.shootingCoolDown + parameter, 0)
-            elif(typeOfPowerUp == 'BULLET_POWER_UP'):
-                self.bulletDamage = min(self.bulletDamage + parameter, self.bulletDamageCap)
-            elif(typeOfPowerUp == 'DASH_DISTANCE'):
-                self.dashRange = min(self.dashRange + parameter, 5)
-                if(self.dashRange == 4):
-                    self.dashingColor = COLORS['green']
-                elif(self.dashRange == 5):
-                    self.dashingColor = COLORS['brightpurple']
-            elif(typeOfPowerUp == 'DASH_COOLDOWN'):
-                self.dashingCoolDown = max(self.dashingCoolDown + parameter, 0)
-            elif(typeOfPowerUp == 'HP_RECOVER'):
-                self.health = min(self.health + parameter, self.maxHealth)
-            elif(typeOfPowerUp == 'HP_INCREASE'):
-                self.maxHealth = min(self.maxHealth + parameter, self.maxHealthCap)
-            
-           
 
     
     def setPlayerColor(self):
@@ -153,7 +162,7 @@ class Player(Moveable):
         Player.drawPlayer(self, canvas)
 
 
-    
+    #player appearance inspird by Nier's scanner object look
     def drawPlayer(self, canvas):
 
         x0 = self.x - self.width
@@ -245,6 +254,7 @@ class Player(Moveable):
 
 
 
+    #dashing mechanic inspired by Hades spacebar dashing move
     def drawDashingAnimation(self, canvas):
         x0 = self.x - self.dashingTriangleWidth
         y0 = self.y + self.dashingTriangleHeight

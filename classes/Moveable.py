@@ -3,6 +3,8 @@ from cmu_112_graphics import *
 import math
 import numpy as np
 
+
+#parent class of the player and enemy classes
 class Moveable():
     def __init__(self, gridX, gridY, boxSize, health=50):
         self.gridX = gridX
@@ -23,7 +25,7 @@ class Moveable():
     
     #dumb methods
 
-    #this angle function is inspired from Jeff Chen's Nier 112 updateAngle
+    #this self angle finding function is inspired from Jeff Chen's Nier 112 updateAngle
     #https://github.com/jrchen312/Nier112/blob/main/hacking2.py
 
     #learned about static methods from Kosbie's OH and 112 website:
