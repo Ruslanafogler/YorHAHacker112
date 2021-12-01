@@ -378,7 +378,7 @@ def getRandomMap(neededEnemyNum):
 
 # def testMapGen():
 #     map = getRandomMap(4)
-#     printMap(map)
+#     printMap(map[0])
     
 # testMapGen()
 

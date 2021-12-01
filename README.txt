@@ -6,7 +6,7 @@ The player must dodge all the bullets and defeat all the enemies on the stage to
 
 
 
-Video Link Here:
+Video Link Here: https://youtu.be/VeJvD36yryo
 
 Installation and Commands:
 *Requires Python3, tkinter cmu 112 graphics.py, and numpy
